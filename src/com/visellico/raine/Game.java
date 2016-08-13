@@ -18,7 +18,7 @@ public class Game extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = 1L;
 	
-	public static int width = 600;	//resolution
+	public static int width = 300;	//resolution
 	public static int height = width / 16 * 9; //aspect ratio 16:9 ||| 168
 	public static int scale = 3;	//How much the game will be scaled- multiply width/height
 		//however we are only rendering for the 300 16:9, it's just scaled up
