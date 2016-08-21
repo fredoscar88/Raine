@@ -13,6 +13,7 @@ import javax.swing.JFrame;
 
 //wowzer
 import com.visellico.raine.graphics.Screen;
+import com.visellico.raine.input.Keyboard;
 
 public class Game extends Canvas implements Runnable {
 
@@ -29,6 +30,7 @@ public class Game extends Canvas implements Runnable {
 	private boolean running = false;
 	
 	private Screen screen;
+	private Keyboard key;
 	
 	//image to draw things, I guess this goes on the graphics, which goes on the buffer strategy which goes on the canvas
 	private BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB); //not scaling w/h, no alpha
@@ -42,6 +44,10 @@ public class Game extends Canvas implements Runnable {
 		
 		screen = new Screen(width, height);	//not scaled either, I guess
 		frame = new JFrame();
+		key = new Keyboard();
+		
+		//Must do this after key is initialized
+		addKeyListener(key);	//adds this component to the canvas
 		
 	}
 	
@@ -52,7 +58,7 @@ public class Game extends Canvas implements Runnable {
 		
 		//new thread of THIS game class, named "Display"
 		thread = new Thread(this, "Game");
-		thread.start();	//automatically runs the run method as well
+		thread.start();	//automatically runs the run() method as well
 		
 	}
 	
@@ -72,16 +78,16 @@ public class Game extends Canvas implements Runnable {
 	public void run() {
 		final double ups = 60.0;	//updates per second
 		long lastTime = System.nanoTime();
-		long timer = System.currentTimeMillis();
+		long timer = System.currentTimeMillis();	//for displaying fps, ups data every second (1000 milliseconds)
 		final double fpsRatio = 1000000000.0 / ups; //in 1 billion nano secs (1 sec) to x frames per sec
-		double delta = 0;
+		double delta = 0;	//change in time
 		long now;
-		int frames = 0;
-		int updates = 0;
+		int frames = 0;	//for displaying update info
+		int updates = 0;//for displaying update info
 		
 		while (running) {
 			now = System.nanoTime();
-			delta += (now - lastTime) / fpsRatio;	//compares elapsed time to a given division of a second
+			delta += (now - lastTime) / fpsRatio;	//compares elapsed time to a given division of a second (generally, 1/60 of a second, giving us 60 frames per sec
 			lastTime = now;
 			while (delta >= 1) {
 				update(); //tick. Game logic. Limited speed. 60 times a second.
@@ -106,28 +112,50 @@ public class Game extends Canvas implements Runnable {
 		stop();
 	}
 	
+	int xMoveMap = 0, yMoveMap = 0;
+	int movementMultiplier = 1;
+	int updateCounter = 0;
+	
 	public void update() {
-				
+		
+		updateCounter = (updateCounter + 1) % 100;
+		
+		key.update();
+		
+		//this is a shitty way to increase/decrease speed but it works
+		movementMultiplier = 1;
+		if (key.mmUp) movementMultiplier = 2;
+		if (key.mmDown) movementMultiplier = 0;
+		
+		//should add a LastPressed thing? Left gets overridden by right, whereas up/down actually just cancel
+		if (updateCounter % 2 == 0 || movementMultiplier > 0){
+		
+			if (key.up) yMoveMap -= 1 + movementMultiplier;
+			if (key.down) yMoveMap += 1 + movementMultiplier;
+			if (key.left) xMoveMap -= 1 + movementMultiplier;
+			if (key.right) xMoveMap += 1 + movementMultiplier;
+			
+		}
 	}
 	
 	public void render() {
 		//for buffering frames, so that we aren't drawing them life
 		BufferStrategy bs = getBufferStrategy();	//gets the buffer strategy from this class, which extends canvas. we already have it.
 		if (bs == null) {	//if our BS doesnt exist, then we create it.
-			createBufferStrategy(3);	//creates the buffer strategy that bs is pointing to- i.e, "this" one
+			createBufferStrategy(3);	//creates the buffer strategy that bs is pointing to- i.e, "this" one. This if should not run again for the duration of runtime
 			//triple buffering. Double ain't gud nuff, we want to be able to draw ASAP
 			return;
 		}
 		
 		screen.clear();
-		screen.render();
+		screen.render(xMoveMap, yMoveMap);	//determines what pixels should be what
 		
 		for (int i = 0; i < pixels.length; i++) {
 			pixels[i] = screen.pixels[i];
 		}
 		
 		Graphics g = bs.getDrawGraphics();	//Graphics links to buffer, a context to draw to the buffer, the graphics of the bugger
-		g.drawImage(image,0, 0, getWidth(), getHeight() , null);	
+		g.drawImage(image, 0, 0, getWidth(), getHeight() , null);	
 		
 		g.dispose();	//free the resources that we arent using- they arent even being displayed, would crash
 		bs.show();	//makes next buffer visible		
@@ -147,6 +175,7 @@ public class Game extends Canvas implements Runnable {
 		game.frame.setLocationRelativeTo(null);
 		game.frame.setVisible(true);
 		
+		game.requestFocusInWindow();
 		game.start();
 		
 	}
