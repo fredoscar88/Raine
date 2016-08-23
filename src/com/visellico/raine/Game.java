@@ -1,19 +1,19 @@
 package com.visellico.raine;
 
 import java.awt.Canvas;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.util.Random;
 
 import javax.swing.JFrame;
 
 //wowzer
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.input.Keyboard;
+import com.visellico.raine.level.Level;
+import com.visellico.raine.level.RandomLevel;
 
 public class Game extends Canvas implements Runnable {
 
@@ -23,6 +23,12 @@ public class Game extends Canvas implements Runnable {
 	public static int height = width / 16 * 9; //aspect ratio 16:9 ||| 168
 	public static int scale = 3;	//How much the game will be scaled- multiply width/height
 		//however we are only rendering for the 300 16:9, it's just scaled up
+	
+	//---------- game stuff
+	//only one level should be loaded at a time, duh
+	private Level level;
+	//----------
+	
 	
 	private Thread thread;
 	private JFrame frame;	//ugh
@@ -45,6 +51,7 @@ public class Game extends Canvas implements Runnable {
 		screen = new Screen(width, height);	//not scaled either, I guess
 		frame = new JFrame();
 		key = new Keyboard();
+		level = new RandomLevel(64,64);
 		
 		//Must do this after key is initialized
 		addKeyListener(key);	//adds this component to the canvas
@@ -85,6 +92,8 @@ public class Game extends Canvas implements Runnable {
 		int frames = 0;	//for displaying update info
 		int updates = 0;//for displaying update info
 		
+		requestFocus();
+		
 		while (running) {
 			now = System.nanoTime();
 			delta += (now - lastTime) / fpsRatio;	//compares elapsed time to a given division of a second (generally, 1/60 of a second, giving us 60 frames per sec
@@ -112,30 +121,23 @@ public class Game extends Canvas implements Runnable {
 		stop();
 	}
 	
-	int xMoveMap = 0, yMoveMap = 0;
-	int movementMultiplier = 1;
-	int updateCounter = 0;
+	int x = 0, y = 0;
 	
 	public void update() {
-		
-		updateCounter = (updateCounter + 1) % 100;
 		
 		key.update();
 		
 		//this is a shitty way to increase/decrease speed but it works
-		movementMultiplier = 1;
-		if (key.mmUp) movementMultiplier = 2;
-		if (key.mmDown) movementMultiplier = 0;
-		
+//		if (key.mmUp) movementMultiplier = 2;
+//		if (key.mmDown) movementMultiplier = 0;
+//		
 		//should add a LastPressed thing? Left gets overridden by right, whereas up/down actually just cancel
-		if (updateCounter % 2 == 0 || movementMultiplier > 0){
 		
-			if (key.up) yMoveMap -= 1 + movementMultiplier;
-			if (key.down) yMoveMap += 1 + movementMultiplier;
-			if (key.left) xMoveMap -= 1 + movementMultiplier;
-			if (key.right) xMoveMap += 1 + movementMultiplier;
-			
-		}
+		if (key.up) y--;
+		if (key.down) y++;
+		if (key.left) x--;
+		if (key.right) x++;
+		
 	}
 	
 	public void render() {
@@ -148,7 +150,8 @@ public class Game extends Canvas implements Runnable {
 		}
 		
 		screen.clear();
-		screen.render(xMoveMap, yMoveMap);	//determines what pixels should be what
+		level.render(x, y, screen);
+//		screen.render(xMoveView, yMoveView);	//determines what pixels should be what
 		
 		for (int i = 0; i < pixels.length; i++) {
 			pixels[i] = screen.pixels[i];
@@ -175,7 +178,6 @@ public class Game extends Canvas implements Runnable {
 		game.frame.setLocationRelativeTo(null);
 		game.frame.setVisible(true);
 		
-		game.requestFocusInWindow();
 		game.start();
 		
 	}
