@@ -19,7 +19,6 @@ public class Tile {
 	//future we might want to load random sprites or something, or other shit like decorations
 	public static Tile grass = new GrassTile(Sprite.grass);
 	public static Tile voidTile = new VoidTile(Sprite.voidsprite);
-	public static Tile levelBorder = new LevelBorderTile(Sprite.levelBorder);
 	//Please note that if a parent class of something is returned, and a child of that parent is returned, 
 	//then calling a method calls the child's overriding method not the one found in the parent (unless of course the child just inherits the parents method)
 	//If the method exists in the child but not the parent, we can't call it (!) since we're looking at the PARENT not the CHILD. very strange but also makes sense to me, finally :I
