@@ -53,10 +53,12 @@ public class Game extends Canvas implements Runnable {
 		screen = new Screen(width, height);	//not scaled either, I guess
 		frame = new JFrame();
 		key = new Keyboard();
-		level = new SpawnLevel("/levels/spawn.png");
+		level = new SpawnLevel("/textures/level.png");
 //		level = new RandomLevel(64,64);
-		player = new Player(key);
-		
+		//player = new Player(key);
+		player = new Player(16 * 5 + 8, 16 * 5 + 8, key);	//adjusting player spawn. Tile sizes here are 16, multiplied by a coordinate in tile level precision, added by half a tile in pixel precision
+															//we can edit this into the constructor in the player class as well, thanks youtube comments
+		System.out.println(player.x + " Game");
 		//Must do this after key is initialized
 		addKeyListener(key);	//adds this component to the canvas
 		

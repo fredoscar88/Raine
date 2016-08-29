@@ -16,6 +16,7 @@ public class Player extends Mob {
 	public Player(Keyboard input) {	//will also use mouse in future
 		this.input = input;	//the keyboard :I
 		sprite = Sprite.player_back;
+		System.out.println(x + " Player");
 	}
 	
 	//in case players need to be instantiated at a specific coordinate
@@ -71,7 +72,7 @@ public class Player extends Mob {
 			flip = 1;
 		}
 		
-		screen.renderPlayer(x - (sprite.SIZE >> 1), y - (sprite.SIZE >> 1), sprite, flip);
+		screen.renderPlayer(x - (sprite.SIZE >> 1), y - (sprite.SIZE >> 1), sprite, flip);	//Moves the player half way along each direction so it's centered
 //		int flip = 0;
 //		
 //		//Thought suggested by a youtube commenter: for rendering these sprites, put em in a 2d array. access direction with dir and cycle the animation with 0,1,0,2 using animate

@@ -9,6 +9,7 @@ import com.visellico.raine.level.tile.VoidTile;
 //vaguely abstract. might make abstract.
 public class Level {
 	//Everything that ALL levels inherit goes here- a template
+	//See SpawnLevel for an idea on how individual levels might be treated
 
 	//Color constants;
 	protected final int GREEN = 0xFF00FF00;	//grass
@@ -17,21 +18,22 @@ public class Level {
 	//-----
 	
 	protected int width, height;	//will be used with random levels- custom made ones will already have a width/height
-	protected int[] tiles;
-	
+	protected int[] tilesInt;
+	protected int[] tiles;	//all the level tiles. acknowledging that only one level can be loaded at a time. Stores the colors.
 	
 	//random level constructor
 	public Level (int width, int height) {
 		this.width = width;
 		this.height = height;
 		//Holds data on what type of tile is here
-		tiles = new int[width*height];
+		tilesInt = new int[width*height];
 		generateLevel();
 	}
 	
 	//Load a level
 	public Level (String path) {
 		loadLevel(path);
+		generateLevel();
 	}
 	
 	protected void generateLevel() {
@@ -75,6 +77,9 @@ public class Level {
 				//Meaning they are in tile-level precision, not pixel. representing the position of the tile in the level.
 				getTile(x, y).render(x, y, screen);	//GetTile accepts x and y and treats them as tile-level precision. <tile>.render however- also uses tile level precision?
 				//each tile renders itself, since the tile knows what's diggity
+				
+				//For "drawn levels"
+				
 			}
 		}
 	}
@@ -82,9 +87,9 @@ public class Level {
 	public Tile getTile(int x, int y) {	//x and y are at Tile-level position
 		if (x < 0|| y < 0 || x >= width || y >= height ) return Tile.voidTile;	//If we go out of bounds in our map. VoidTile is what we render OOB
 		switch (tiles[x + y * width])	{	//pulls the tile to render from this level's tile map. Get tile is ran for every tile in the level, me supposes, eventually
-			case 0: return Tile.grass;	//A new grass tile tbh, but we've gone and just created a static version to be used wherever
-			case 1: return Tile.flower;
-			case 2: return Tile.rock;
+			case GREEN: return Tile.grass;	//A new grass tile tbh, but we've gone and just created a static version to be used wherever
+			case PALE_YELLOW: return Tile.flower;
+			case GRAY: return Tile.rock;
 			default: return Tile.voidTile;//return Tile.voidTile;
 			//no need to break in the switch b/c return
 		}
