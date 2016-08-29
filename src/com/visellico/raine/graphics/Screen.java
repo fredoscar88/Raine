@@ -2,6 +2,7 @@ package com.visellico.raine.graphics;
 
 import java.util.Random;
 
+import com.visellico.raine.entity.mob.Player;
 import com.visellico.raine.level.tile.Tile;
 
 public class Screen {
@@ -46,6 +47,7 @@ public class Screen {
 		//xp, yp; offset of the pixel in the screen. (so position.)
 		for (int y = 0; y < tile.sprite.SIZE; y++) {
 			int ya = y + yp;	//ya- YAbsolute- w/yp being the offset. Y is the position of the pixel in the TILE, yp offsets it relative/absolute to the world- yp will eventually include the offset
+								//this represents the ultimate position of the sprite in the context of the screen of pixels, as opposed to the pixels of the tile map.
 			for (int x = 0; x < tile.sprite.SIZE; x++) {
 				int xa = x + xp;	//xp- X Absolute w/xp being the offset. . . . . . . . .^^^
 				
@@ -70,6 +72,41 @@ public class Screen {
 				 */
 			}
 		}
+	}
+	
+	
+	/**
+	 * Renders specifically the sprite(s) of the player. Really the same as the tile rendering method, with a little more variety, i.e the ability to flip the sprite.
+	 * The player is also generally held to a constant position- at the center of the screen, where tiles are absolute- theiy x and y do not change, but the player's does.
+	 * They move at the same rate as the as the map pans, because the offset is the exact same- because the level rendering uses the player's position as that offset.
+	 * @param xp X position of the player in the tile map, pixel-wise
+	 * @param yp Y position of the player in the tile map, pixel-wise
+	 * @param sprite Sprite to render
+	 * @param flipState 0 = no flipping, 1 = flip over y-axis (invert x); 2 = flip over x-axis (invert y); 3 = flip both.
+	 */
+	//For flipState, I used earlier "boolean invert" for if the x was inverted- but the thing is, it's not very versatile. There may come a day I want to flip all over the place.
+	//	so yeah Ill stick with more states
+	public void renderPlayer(int xp, int yp, Sprite sprite, int flipState) {
+		xp -= xOffset;
+		yp -= yOffset;
+		for (int y = 0; y < sprite.SIZE; y++) {	//we KNOW players are all the same size. But yet. But yet. who knows.
+			int ya = y + yp;
+			int yModified = y;
+			if (flipState == 2 || flipState == 3) yModified = (sprite.SIZE - 1) - y;
+			
+			for (int x = 0; x < sprite.SIZE; x++) {
+				int xa = x + xp;
+				int xModified = x;
+				if (flipState == 1 || flipState == 3) xModified = (sprite.SIZE - 1) - x;
+				/*-sprite.Size (instead of 0) is what TheCherno uses instead of xa < 0, it's xa < -16- but this is leftover from render tile, when the screen would render shit out of screen*/
+				
+				if (xa < 0 || xa >= width || ya < 0 || ya >= height) continue;
+				
+				int col = sprite.pixels[xModified + yModified * sprite.SIZE];
+				if (col != 0xffff00ff) pixels[xa+ya*width] = col;	//If the color is pink (we also count the alpha channel, the first two hex digits), then just don't... draw the pixel
+					
+			}
+		}		
 	}
 	
 	//Offset is also = to player position

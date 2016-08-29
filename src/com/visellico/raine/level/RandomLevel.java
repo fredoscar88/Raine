@@ -15,7 +15,7 @@ public class RandomLevel extends Level {
 	}
 	
 	//will be run from the super constructor
-	protected void generateRandomLevel() {
+	protected void generateLevel() {
 		
 		//Used double for loop instead of a single in order to control specific tiles
 		for (int y = 0; y < height; y++) {

@@ -9,11 +9,12 @@ import java.awt.image.DataBufferInt;
 
 import javax.swing.JFrame;
 
+import com.visellico.raine.entity.mob.Player;
 //wowzer
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.input.Keyboard;
 import com.visellico.raine.level.Level;
-import com.visellico.raine.level.RandomLevel;
+import com.visellico.raine.level.SpawnLevel;
 
 public class Game extends Canvas implements Runnable {
 
@@ -27,6 +28,7 @@ public class Game extends Canvas implements Runnable {
 	//---------- game stuff
 	//only one level should be loaded at a time, duh
 	private Level level;
+	private Player player;
 	//----------
 	
 	
@@ -51,7 +53,9 @@ public class Game extends Canvas implements Runnable {
 		screen = new Screen(width, height);	//not scaled either, I guess
 		frame = new JFrame();
 		key = new Keyboard();
-		level = new RandomLevel(64,64);
+		level = new SpawnLevel("/levels/spawn.png");
+//		level = new RandomLevel(64,64);
+		player = new Player(key);
 		
 		//Must do this after key is initialized
 		addKeyListener(key);	//adds this component to the canvas
@@ -121,23 +125,10 @@ public class Game extends Canvas implements Runnable {
 		stop();
 	}
 	
-	int x = 0, y = 0;
-	
 	public void update() {
 		
 		key.update();
-		
-		//this is a shitty way to increase/decrease speed but it works
-//		if (key.mmUp) movementMultiplier = 2;
-//		if (key.mmDown) movementMultiplier = 0;
-//		
-		//should add a LastPressed thing? Left gets overridden by right, whereas up/down actually just cancel
-		
-		if (key.up) y--;
-		if (key.down) y++;
-		if (key.left) x--;
-		if (key.right) x++;
-		
+		player.update();
 	}
 	
 	public void render() {
@@ -150,7 +141,10 @@ public class Game extends Canvas implements Runnable {
 		}
 		
 		screen.clear();
-		level.render(x, y, screen);
+		int xScroll = player.x - (screen.width / 2);	//Offsets level rendering to center the player
+		int yScroll = player.y - (screen.height / 2);	//this is because the player's position would other wise be at the top left of the screen.
+		level.render(xScroll, yScroll, screen);	//So render at location of player, minus half the screen in either direction
+		player.render(screen);
 //		screen.render(xMoveView, yMoveView);	//determines what pixels should be what
 		
 		for (int i = 0; i < pixels.length; i++) {
@@ -158,8 +152,9 @@ public class Game extends Canvas implements Runnable {
 		}
 		
 		Graphics g = bs.getDrawGraphics();	//Graphics links to buffer, a context to draw to the buffer, the graphics of the bugger
-		g.drawImage(image, 0, 0, getWidth(), getHeight() , null);	
-		
+		g.drawImage(image, 0, 0, getWidth(), getHeight() , null);
+		//g.drawLine(3*150, 0, 3*150, 3*533);
+		//g.drawLine(0, scale *screen.height/2, 3*300, scale * screen.height/2);
 		g.dispose();	//free the resources that we arent using- they arent even being displayed, would crash
 		bs.show();	//makes next buffer visible		
 	}

@@ -18,6 +18,8 @@ public class Tile {
 	//A general purpose grass tile, I guess :I but everytime we use this singular one, it's going to be carbon copied. To be sure, all grass are the same atm anyway, unless in tjhe
 	//future we might want to load random sprites or something, or other shit like decorations
 	public static Tile grass = new GrassTile(Sprite.grass);
+	public static Tile flower = new FlowerTile(Sprite.flower);
+	public static Tile rock = new RockTile(Sprite.rock);
 	public static Tile voidTile = new VoidTile(Sprite.voidsprite);
 	//Please note that if a parent class of something is returned, and a child of that parent is returned, 
 	//then calling a method calls the child's overriding method not the one found in the parent (unless of course the child just inherits the parents method)

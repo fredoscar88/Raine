@@ -1,15 +1,24 @@
 package com.visellico.raine.level;
 
 import com.visellico.raine.graphics.Screen;
+import com.visellico.raine.graphics.Sprite;
 import com.visellico.raine.level.tile.Tile;
+import com.visellico.raine.level.tile.VoidTile;
 
 //there will be two "types" here random gen and data loaded levels
-//vaguely abstract
+//vaguely abstract. might make abstract.
 public class Level {
 	//Everything that ALL levels inherit goes here- a template
 
+	//Color constants;
+	protected final int GREEN = 0xFF00FF00;	//grass
+	protected final int PALE_YELLOW = 0xFFDDFF38;
+	protected final int GRAY = 0xFF877E79;
+	//-----
+	
 	protected int width, height;	//will be used with random levels- custom made ones will already have a width/height
 	protected int[] tiles;
+	
 	
 	//random level constructor
 	public Level (int width, int height) {
@@ -17,7 +26,7 @@ public class Level {
 		this.height = height;
 		//Holds data on what type of tile is here
 		tiles = new int[width*height];
-		generateRandomLevel();
+		generateLevel();
 	}
 	
 	//Load a level
@@ -25,12 +34,11 @@ public class Level {
 		loadLevel(path);
 	}
 	
-	
-	protected void generateRandomLevel() {
+	protected void generateLevel() {
 		
 	}
 	
-	private void loadLevel(String path) {
+	protected void loadLevel(String path) {
 		
 	}
 	
@@ -50,41 +58,34 @@ public class Level {
 	//He names 'em xScroll, yScroll. Also all levels render the same, hence why we write this is in the parent class
 	public void render(int xScroll, int yScroll, Screen screen) {
 		
-		//idk how TheCherno plans on fixing this, so Ill leave off on my solution.
-//		if (xScroll < 0) {
-//			xScroll = 0;	//NB the X and Y value of the player in Game are unaffected, so X can continue to get increasingly negative, it wont be set to 0 since that X represents
-//		}					//	the player's position- the player should be able to walk up to the edge of the map- it just won't scroll to that point. When the player walks back it won't
-//							// scroll again until it crosses the mid-line threshold, so when you hit the other direction it wont start scrolling that way immediately, have to allow for walk
-//							// time.
-//		else if (xScroll > width) {
-//			xScroll = width;
-//		}
-		
+		//screen that we're drawing onto
 		screen.setOffset(xScroll, yScroll);	//xScrp;; and yScroll are the position of the player, and the amount the map needs to "scroll" when the player moves- our offset
 		
 		//corner pins! Ways to tell the rendery bugger to stop. Because he's hit a corner. and also I guess where to start from. Only need two! Area of the level to RENDER!
 		int x0 = xScroll >> 4;	//x0 is the left side of the screen- a vertical line (like x=0 in math)- where we start rendering x
 								//divided by 16- to make it into tiles, as 16, 2^4, is the size of tiles :V, so pixels 0-15 belong to tile 0, as all of those >>4 == 0 (TODO) make sure to changeme if tiles change size
-		int x1 = (xScroll + screen.width) >> 4;	//TILE PRECISION >> 4 MASTERRACE
+		int x1 = ((xScroll + screen.width) >> 4) + 1;	//TILE PRECISION >> 4 MASTERRACE
 		int y0 = yScroll >> 4;	//four should be replaced by sqrt(tilesize) tbh
-		int y1 = (yScroll + screen.height) >> 4;
+		int y1 = ((yScroll + screen.height) >> 4) + 1;	//x1 and y1 cornerpins are moved +1 tile out because when we try rendering the tiles in the screen, it gets cut off 
 		
 		//y and x run from, of course, y0 -> y1, x0 -> x1. We could have calculated them inside the for loop but, well, readability I guess.
-		for (int y = y0; y < y1; y++) {
+		for (int y = y0; y < y1; y++) {	//the y1 and x1 render regions are bigger than the technical correct way.
 			for (int x = x0; x < x1; x++) {
 				//X and Y here cover all tiles that have parts visible on screen (including semi-hidden tiles)
-				//Meaning they are in tile-level precision, not pixel.
+				//Meaning they are in tile-level precision, not pixel. representing the position of the tile in the level.
 				getTile(x, y).render(x, y, screen);	//GetTile accepts x and y and treats them as tile-level precision. <tile>.render however- also uses tile level precision?
-				
+				//each tile renders itself, since the tile knows what's diggity
 			}
 		}
 	}
-	
+		
 	public Tile getTile(int x, int y) {	//x and y are at Tile-level position
+		if (x < 0|| y < 0 || x >= width || y >= height ) return Tile.voidTile;	//If we go out of bounds in our map. VoidTile is what we render OOB
 		switch (tiles[x + y * width])	{	//pulls the tile to render from this level's tile map. Get tile is ran for every tile in the level, me supposes, eventually
-			case -1: return Tile.levelBorder;
 			case 0: return Tile.grass;	//A new grass tile tbh, but we've gone and just created a static version to be used wherever
-			default: return Tile.voidTile;
+			case 1: return Tile.flower;
+			case 2: return Tile.rock;
+			default: return Tile.voidTile;//return Tile.voidTile;
 			//no need to break in the switch b/c return
 		}
 	}

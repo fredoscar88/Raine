@@ -35,6 +35,7 @@ public class SpriteSheet {
 											 * Specifically, Im guessing, relative to SpriteSheet- or well, the whole project, I dont know why SpriteSheet was specifically invoked
 											 */
 			BufferedImage image = ImageIO.read(SpriteSheet.class.getResource(path));	//whew (TODO) get understood; ep 19 of TheCherno. ~9-10 min mark
+			//Buffered Image loads the alpha channel, too
 			int w = image.getWidth();
 			int h = image.getHeight();
 			image.getRGB(0, 0, w, h, pixels, 0, w);	//(TODO) get understood. This puts the image pixels into the pixels array
