@@ -47,4 +47,4 @@ Temporary Items
 .apdisk
 
 #Ignore java classes
-.class
+*.class
