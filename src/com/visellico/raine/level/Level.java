@@ -13,13 +13,18 @@ public class Level {
 
 	//Color constants;
 	protected final int GREEN = 0xFF00FF00;	//grass
-	protected final int PALE_YELLOW = 0xFFDDFF38;
-	protected final int GRAY = 0xFF877E79;
+	protected final int PALE_YELLOW = 0xFFDDFF38;	//flower
+	protected final int GRAY = 0xFF877E79;	//rock
 	//-----
 	
 	protected int width, height;	//will be used with random levels- custom made ones will already have a width/height
 	protected int[] tilesInt;
 	protected int[] tiles;	//all the level tiles. acknowledging that only one level can be loaded at a time. Stores the colors.
+	
+	//---------------Levels-----
+	public static Level spawn = new SpawnLevel("/levels/spawn.png");
+	
+	//--------------------------
 	
 	//random level constructor
 	public Level (int width, int height) {
@@ -84,12 +89,16 @@ public class Level {
 		}
 	}
 		
+	//We are now pulling color constants from Tile
 	public Tile getTile(int x, int y) {	//x and y are at Tile-level position
 		if (x < 0|| y < 0 || x >= width || y >= height ) return Tile.voidTile;	//If we go out of bounds in our map. VoidTile is what we render OOB
 		switch (tiles[x + y * width])	{	//pulls the tile to render from this level's tile map. Get tile is ran for every tile in the level, me supposes, eventually
-			case GREEN: return Tile.grass;	//A new grass tile tbh, but we've gone and just created a static version to be used wherever
-			case PALE_YELLOW: return Tile.flower;
-			case GRAY: return Tile.rock;
+			case Tile.colSpawnGrass: return Tile.spawnGrass;	//A new grass tile tbh, but we've gone and just created a static version to be used wherever
+			case Tile.colSpawnFloor: return Tile.spawnFloor;
+			case Tile.colSpawnWall1: return Tile.spawnWall1;
+			case Tile.colSpawnWall2: return Tile.spawnWall2;
+			case Tile.colSpawnHedge: return Tile.spawnHedge;
+			case Tile.colSpawnWater: return Tile.spawnWater;
 			default: return Tile.voidTile;//return Tile.voidTile;
 			//no need to break in the switch b/c return
 		}

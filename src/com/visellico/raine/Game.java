@@ -14,7 +14,7 @@ import com.visellico.raine.entity.mob.Player;
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.input.Keyboard;
 import com.visellico.raine.level.Level;
-import com.visellico.raine.level.SpawnLevel;
+import com.visellico.raine.level.TileCoordinate;
 
 public class Game extends Canvas implements Runnable {
 
@@ -53,11 +53,15 @@ public class Game extends Canvas implements Runnable {
 		screen = new Screen(width, height);	//not scaled either, I guess
 		frame = new JFrame();
 		key = new Keyboard();
-		level = new SpawnLevel("/textures/level.png");
+		level = Level.spawn;	//new SpawnLevel("/levels/spawn.png");	//starts @spawn
 //		level = new RandomLevel(64,64);
 		//player = new Player(key);
-		player = new Player(16 * 5 + 8, 16 * 5 + 8, key);	//adjusting player spawn. Tile sizes here are 16, multiplied by a coordinate in tile level precision, added by half a tile in pixel precision
+		TileCoordinate playerSpawn = new TileCoordinate(20, 59);
+		player = new Player(playerSpawn.x(), playerSpawn.y(), key);	//adjusting player spawn. Tile sizes here are 16, multiplied by a coordinate in tile level precision, added by half a tile in pixel precision
 															//we can edit this into the constructor in the player class as well, thanks youtube comments
+															//however we just ended up using a tileCoordinate class that does 16x for us.
+		player.init(level);
+		
 		System.out.println(player.x + " Game");
 		//Must do this after key is initialized
 		addKeyListener(key);	//adds this component to the canvas
@@ -148,6 +152,7 @@ public class Game extends Canvas implements Runnable {
 		level.render(xScroll, yScroll, screen);	//So render at location of player, minus half the screen in either direction
 		player.render(screen);
 //		screen.render(xMoveView, yMoveView);	//determines what pixels should be what
+		screen.renderMovementPix(player.x, player.y, player.xxa, player.yya, player);
 		
 		for (int i = 0; i < pixels.length; i++) {
 			pixels[i] = screen.pixels[i];

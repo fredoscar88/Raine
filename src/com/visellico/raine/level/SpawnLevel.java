@@ -13,6 +13,8 @@ public class SpawnLevel extends Level {
 	//one way to do this; slow but precise
 	//protected Tile[] tiles;
 	
+	//SPAWN 19, 59
+	
 	public SpawnLevel(String path) {
 		super(path);
 //		loadLevel(path);	//load level is already called in the super constructor- calling it again ends up with a nullpointerexception on Tiles since we overwrite Level's work on 

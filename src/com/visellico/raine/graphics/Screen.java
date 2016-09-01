@@ -1,7 +1,6 @@
 package com.visellico.raine.graphics;
 
-import java.util.Random;
-
+import com.visellico.raine.Game;
 import com.visellico.raine.entity.mob.Player;
 import com.visellico.raine.level.tile.Tile;
 
@@ -97,7 +96,7 @@ public class Screen {
 			for (int x = 0; x < sprite.SIZE; x++) {
 				int xa = x + xp;
 				int xModified = x;
-				if (flipState == 1 || flipState == 3) xModified = (sprite.SIZE - 1) - x;
+				if (flipState == 1 || flipState == 3) xModified = (sprite.SIZE - 1) - x;	//reverses the position of a pixel
 				/*-sprite.Size (instead of 0) is what TheCherno uses instead of xa < 0, it's xa < -16- but this is leftover from render tile, when the screen would render shit out of screen*/
 				
 				if (xa < 0 || xa >= width || ya < 0 || ya >= height) continue;
@@ -115,6 +114,30 @@ public class Screen {
 	public void setOffset(int xOffset, int yOffset) {
 		this.xOffset = xOffset;
 		this.yOffset = yOffset;
+	}
+
+	public void renderMovementPix(int x, int y, int xxa, int yya, Player player) {
+		int xt, yt;
+		
+		pixels[x - xOffset + (y - yOffset) * width] = 0xff00ff00;
+		System.out.println((x - xOffset) + " " + ( - yOffset));
+		
+		for (int c = 0; c < 4; c++) {
+			xt = xxa + (c % 2) * player.xtmp1 + player.xtmp2;
+			yt = yya + (c / 2) * player.ytmp1 + player.ytmp2;
+			xt -= player.xtmp1 + 2;
+			//yt -= player.ytmp1;
+			
+			try {
+				pixels[(xt - xOffset) + ((yt - yOffset) * width)] = 0xff000000;
+			} catch (Exception e) {
+				
+			}
+			
+			System.out.println((xt - xOffset) + " " + (yt - yOffset));
+		}
+		
+		
 	}
 	
 }

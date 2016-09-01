@@ -13,7 +13,8 @@ public class SpriteSheet {
 	public int[] pixels;
 	
 	//start off path WITH a forward slash
-	public static SpriteSheet tiles = new SpriteSheet("/textures/spritesheet.png",256);
+	public static SpriteSheet tiles = new SpriteSheet("/textures/sheets/spritesheet.png",256);
+	public static SpriteSheet spawnLevelTiles = new SpriteSheet("/textures/sheets/spawnlevelTiles.png", 48);
 	
 	public SpriteSheet(String path, int size) {
 		this.path = path;

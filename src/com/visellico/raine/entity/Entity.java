@@ -37,4 +37,8 @@ public abstract class Entity {	//abstract because this is a template, a framewor
 		return removed;
 	}
 	
+	public void init(Level level) {
+		this.level = level;
+	}
+	
 }
