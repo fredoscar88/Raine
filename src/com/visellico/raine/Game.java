@@ -1,7 +1,9 @@
 package com.visellico.raine;
 
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
@@ -13,6 +15,7 @@ import com.visellico.raine.entity.mob.Player;
 //wowzer
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.input.Keyboard;
+import com.visellico.raine.input.Mouse;
 import com.visellico.raine.level.Level;
 import com.visellico.raine.level.TileCoordinate;
 
@@ -20,9 +23,9 @@ public class Game extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = 1L;
 	
-	public static int width = 300;	//resolution
-	public static int height = width / 16 * 9; //aspect ratio 16:9 ||| 168
-	public static int scale = 3;	//How much the game will be scaled- multiply width/height
+	private static int width = 300;	//resolution
+	private static int height = width / 16 * 9; //aspect ratio 16:9 ||| 168
+	private static int scale = 3;	//How much the game will be scaled- multiply width/height
 		//however we are only rendering for the 300 16:9, it's just scaled up
 	
 	//---------- game stuff
@@ -62,9 +65,11 @@ public class Game extends Canvas implements Runnable {
 															//however we just ended up using a tileCoordinate class that does 16x for us.
 		player.init(level);
 		
-		System.out.println(player.x + " Game");
 		//Must do this after key is initialized
 		addKeyListener(key);	//adds this component to the canvas
+		Mouse mouse = new Mouse();
+		addMouseListener(mouse);
+		addMouseMotionListener(mouse);
 		
 	}
 	
@@ -134,7 +139,8 @@ public class Game extends Canvas implements Runnable {
 	public void update() {
 		
 		key.update();
-		player.update();
+		player.update();	//screw it, player will be updated and rendered independently, at least THIS player will be.
+		level.update();
 	}
 	
 	public void render() {
@@ -150,9 +156,10 @@ public class Game extends Canvas implements Runnable {
 		int xScroll = player.x - (screen.width / 2);	//Offsets level rendering to center the player
 		int yScroll = player.y - (screen.height / 2);	//this is because the player's position would other wise be at the top left of the screen.
 		level.render(xScroll, yScroll, screen);	//So render at location of player, minus half the screen in either direction
-		player.render(screen);
-//		screen.render(xMoveView, yMoveView);	//determines what pixels should be what
-		screen.renderMovementPix(player.x, player.y, player.xxa, player.yya, player);
+		player.render(screen);	//Player is rendered after other mobs because the player should render above everything else. Which means it's being rendered twice- 
+								//	I dont have a fix for this now since it should still render players from level.render (multiplayer), but I want player to belong to level 
+								//	and not be updated on it's own.
+		//screen.renderMovementPix(player.x, player.y, player.xxa, player.yya, player);
 		
 		for (int i = 0; i < pixels.length; i++) {
 			pixels[i] = screen.pixels[i];
@@ -160,12 +167,21 @@ public class Game extends Canvas implements Runnable {
 		
 		Graphics g = bs.getDrawGraphics();	//Graphics links to buffer, a context to draw to the buffer, the graphics of the bugger
 		g.drawImage(image, 0, 0, getWidth(), getHeight() , null);
-		//g.drawLine(3*150, 0, 3*150, 3*533);
-		//g.drawLine(0, scale *screen.height/2, 3*300, scale * screen.height/2);
+		g.setColor(Color.WHITE);
+		g.setFont(new Font("Verdana", 0, 50));
+		//g.fillRect(Mouse.getX() - 32, Mouse.getY() - 32, 64, 64);
+		//g.drawString("Button: " + Mouse.getButton(), 50, 50);
 		g.dispose();	//free the resources that we arent using- they arent even being displayed, would crash
 		bs.show();	//makes next buffer visible		
 	}
 	
+	static public int getWindowHeight() {
+		return height * scale;
+	}
+	
+	static public int getWindowWidth() {
+		return width * scale;
+	}
 	
 	//hurr, entry point
 	public static void main(String[] args) {

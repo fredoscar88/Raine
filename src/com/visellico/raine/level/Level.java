@@ -1,9 +1,11 @@
 package com.visellico.raine.level;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.visellico.raine.entity.Entity;
 import com.visellico.raine.graphics.Screen;
-import com.visellico.raine.graphics.Sprite;
 import com.visellico.raine.level.tile.Tile;
-import com.visellico.raine.level.tile.VoidTile;
 
 //there will be two "types" here random gen and data loaded levels
 //vaguely abstract. might make abstract.
@@ -20,6 +22,8 @@ public class Level {
 	protected int width, height;	//will be used with random levels- custom made ones will already have a width/height
 	protected int[] tilesInt;
 	protected int[] tiles;	//all the level tiles. acknowledging that only one level can be loaded at a time. Stores the colors.
+	
+	private List<Entity> entities = new ArrayList<Entity>();
 	
 	//---------------Levels-----
 	public static Level spawn = new SpawnLevel("/levels/spawn.png");
@@ -51,7 +55,9 @@ public class Level {
 	
 	//happens sixty updates a second
 	public void update() {
-		
+		for (int i = 0; i < entities.size(); i++) {
+			entities.get(i).update();
+		}
 	}
 	
 	//time of the level, manages time, like minecraft or something
@@ -86,7 +92,15 @@ public class Level {
 				//For "drawn levels"
 				
 			}
+			
 		}
+		for (int i = 0; i < entities.size(); i++) {
+			entities.get(i).render(screen);
+		}
+	}
+	
+	public void add(Entity e) {
+		entities.add(e);
 	}
 		
 	//We are now pulling color constants from Tile

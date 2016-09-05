@@ -1,8 +1,11 @@
 package com.visellico.raine.entity.mob;
 
+import com.visellico.raine.Game;
+import com.visellico.raine.entity.projectile.Projectile;
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.graphics.Sprite;
 import com.visellico.raine.input.Keyboard;
+import com.visellico.raine.input.Mouse;
 
 public class Player extends Mob {
 	
@@ -29,13 +32,12 @@ public class Player extends Mob {
 	
 	public void update() {
 		int xa = 0, ya = 0;
-		animate = (animate + 1) % 40;
+		animate = (animate + 1) % 40;	//cycles between 0 and 39
 		
 		if (input.up) ya--;
 		if (input.down) ya++;
 		if (input.left) xa--;
 		if (input.right) xa++;
-		//we used to just have x+- and y+- here, but this gives control to move.
 		if (xa != 0 || ya !=0) {
 			move(xa, ya);	//xa and ya are = to one of the following: {-1, 0, 1)
 			walking = true;	//if we are moving, we are walking
@@ -43,8 +45,32 @@ public class Player extends Mob {
 			walking = false;
 		}
 		//xa and ya are delta variables, how much it is changing
+		
+		clear();	//Gets rid of projectiles that have over travelled, travelled beyond their range
+		updateShooting();
+		
 	}
 	
+	private void clear() {
+		for (int i = 0; i < projectiles.size(); i++) {
+			Projectile p = projectiles.get(i);
+			if (p.isRemoved()) projectiles.remove(i);
+		}
+		
+	}
+
+	private void updateShooting() {
+		
+		if (Mouse.getButton() == 1) {
+			//System.out.println(Mouse.getX() + " " + Game.getWindowWidth() / 2 + "\n" + Mouse.getY() + " " + Game.getWindowHeight() / 2);
+			double dx = Mouse.getX() - (Game.getWindowWidth()/2);	//should be pulling this from screen, but game width/height is static
+			double dy = Mouse.getY() - (Game.getWindowHeight()/2);
+			double theta = Math.atan2(dy, dx);	//Basically, if dx= 0 tan is approaching infinite. But we all know that it should be 0 so this makes it 0.
+			shoot(x, y, theta);	//Note we still use the players x y as the place to fire from!
+				//all mobs can shoot, players shoot differently which is why we're calling the super class method but doing math here
+		}
+	}
+
 	/**
 	 * Renders the player by determining which sprite to draw and calling the playerRender method in the given screen object.
 	 * Uses an "animate" variable cycling between 0 and 39 for walking. A 2d array stores all idle/walking animations for each direction

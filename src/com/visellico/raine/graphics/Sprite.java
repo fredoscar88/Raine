@@ -17,7 +17,7 @@ public class Sprite {
 	public static Sprite rock = new Sprite(16, 2, 0, SpriteSheet.tiles);
 //	public static Sprite brick = new Sprite(16, 1, 0, SpriteSheet.tiles);
 	public static Sprite voidsprite = new Sprite(16, 0xa0d0a0);	//0x000000 for readability, as opposed to 0 or 0x0
-
+	
 //----------SPAWN LEVEL SPRITES-----------------//
 	
 	public static Sprite spawn_grass = new Sprite(16, 0, 0, SpriteSheet.spawnLevelTiles);
@@ -41,6 +41,9 @@ public class Sprite {
 												};
 	//	public static Sprite player_left = new Sprite(32, 3, 5, SpriteSheet.tiles);	//Going to create an invert sprite constructor in Sprite
 //	public static Sprite player_left = new Sprite(player_right);
+	
+//-----------WIZARD PROJECTILE SPRITES-------------//
+	public static Sprite projectileWizard = new Sprite(16,0, 0, SpriteSheet.wizardProjectiles);
 	
 	
 	//Loads a sprite from the sprite sheet for the new sprite

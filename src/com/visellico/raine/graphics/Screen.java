@@ -1,7 +1,6 @@
 package com.visellico.raine.graphics;
 
-import com.visellico.raine.Game;
-import com.visellico.raine.entity.mob.Player;
+import com.visellico.raine.entity.projectile.Projectile;
 import com.visellico.raine.level.tile.Tile;
 
 public class Screen {
@@ -108,6 +107,23 @@ public class Screen {
 		}		
 	}
 	
+	public void renderProjectile(int xp, int yp, Projectile p) {
+		xp -= xOffset;
+		yp -= yOffset;
+		for (int y = 0; y < p.getSpriteSize(); y++) {
+			int ya = y + yp;	
+			for (int x = 0; x < p.getSpriteSize(); x++) {
+				int xa = x + xp;	
+				if (xa < 0 || xa >= width || ya < 0 || ya >= height) continue;
+				
+				int col = p.getSprite().pixels[x + y * p.getSpriteSize()];
+				if (col != 0xFFFF00FF) pixels[xa+ya*width] = col;
+//				 = p.sprite.pixels[x + y * p.sprite.SIZE];
+				
+			}
+		}
+	}
+	
 	//Offset is also = to player position
 	//Offset created by the player after movement; manipulates offset present in renderTile()
 	//This is called from the level rendering, as that is where player position is updated.
@@ -116,11 +132,13 @@ public class Screen {
 		this.yOffset = yOffset;
 	}
 
-	public void renderMovementPix(int x, int y, int xxa, int yya, Player player) {
+
+
+	/*public void renderMovementPix(int x, int y, int xxa, int yya, Player player) {
 		int xt, yt;
 		
 		pixels[x - xOffset + (y - yOffset) * width] = 0xff00ff00;
-		System.out.println((x - xOffset) + " " + ( - yOffset));
+		//System.out.println((x - xOffset) + " " + ( - yOffset));
 		
 		for (int c = 0; c < 4; c++) {
 			xt = xxa + (c % 2) * player.xtmp1 + player.xtmp2;
@@ -134,10 +152,10 @@ public class Screen {
 				
 			}
 			
-			System.out.println((xt - xOffset) + " " + (yt - yOffset));
+			//System.out.println((xt - xOffset) + " " + (yt - yOffset));
 		}
 		
 		
-	}
+	}*/
 	
 }

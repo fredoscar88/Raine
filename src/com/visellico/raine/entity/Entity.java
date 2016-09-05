@@ -39,6 +39,8 @@ public abstract class Entity {	//abstract because this is a template, a framewor
 	
 	public void init(Level level) {
 		this.level = level;
+		//level.add(this);	//(IMPORTANT) TheCherno has NOT done this (yet)
+		//(TODO) do level.add(this) here?
 	}
 	
 }
