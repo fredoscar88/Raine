@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.visellico.raine.entity.Entity;
+import com.visellico.raine.entity.projectile.Projectile;
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.level.tile.Tile;
 
@@ -24,6 +25,7 @@ public class Level {
 	protected int[] tiles;	//all the level tiles. acknowledging that only one level can be loaded at a time. Stores the colors.
 	
 	private List<Entity> entities = new ArrayList<Entity>();
+	private List<Projectile> projectiles = new ArrayList<Projectile>();
 	
 	//---------------Levels-----
 	public static Level spawn = new SpawnLevel("/levels/spawn.png");
@@ -58,6 +60,25 @@ public class Level {
 		for (int i = 0; i < entities.size(); i++) {
 			entities.get(i).update();
 		}
+		for (int i = 0; i < projectiles.size(); i++) {
+			projectiles.get(i).update();
+		}
+	}
+	
+	public boolean tileCollision(double x, double y, double xa, double ya, int size) {	//really should call these delta..
+		boolean solid = false;
+		
+		for (int c = 0; c < 4; c++) {
+			int xt = (((int)x + (int)xa) + (c % 2) * (size - 2) - 3) / 16;	//finding corners is alwatys fun! Frankly we should accept the "corner" params
+		 	int yt = (((int)y + (int)ya) + (c / 2) * (size - 1) - 3) / 16; 	//and I should set up rendering the corners that collision is even detected from
+		 	if (getTile(xt, yt).solid()) solid = true;
+		}
+		return solid;
+		
+	}
+	
+	public List<Projectile> getProjectiles() {
+		return projectiles;
 	}
 	
 	//time of the level, manages time, like minecraft or something
@@ -97,10 +118,17 @@ public class Level {
 		for (int i = 0; i < entities.size(); i++) {
 			entities.get(i).render(screen);
 		}
+		for (int i = 0; i < projectiles.size(); i++) {
+			projectiles.get(i).render(screen);
+		}
 	}
 	
 	public void add(Entity e) {
 		entities.add(e);
+	}
+	public void addProjectile(Projectile p) {
+		projectiles.add(p);
+		p.init(this);
 	}
 		
 	//We are now pulling color constants from Tile

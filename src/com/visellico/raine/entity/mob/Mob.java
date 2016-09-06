@@ -15,8 +15,9 @@ public abstract class Mob extends Entity {
 	protected boolean moving = false;
 	//protected boolean walking = false;	//unused
 	
-	protected List<Projectile> projectiles = new ArrayList<Projectile>();
+	//protected List<Projectile> projectiles = new ArrayList<Projectile>();
 	//we can tell who the projectiles belong to
+	//	but apparently we're just keeping this in Level now
 	
 	//---TEMPORARY FOR SHOWING WHERE WE CHECK COLLISION---
 	//	Actually, I'm going to keep this, so that I can turn on bounding boxes whenever I want.... ah but.
@@ -56,14 +57,15 @@ public abstract class Mob extends Entity {
 		}
 		//to fix "sliding" against walls, we can split collision detection up and substitute 0 for xa and ya in two separate cases. That's one way. Or use magic if statements
 		
-		System.out.println(projectiles.size());
+		//aaaaaSystem.out.println(level.getProjectiles().size());
 	}
 	
 	protected void shoot(int x, int y, double dir) {
 //		dir *= 180 / Math.PI;	//convert to degrees
 		Projectile p = new WizardProjectile(x,y, dir); //notsure how I feel about this cast
-		projectiles.add(p);	//the projectile belongs to this mob, so we add it to this mob's collection of projectiles
-		level.add(p);
+//		level.getProjectiles().add(p);	//the projectile belongs to this mob, so we add it to this mob's collection of projectiles
+		level.addProjectile(p);
+//		p.init(level);	initiliazing in level, I guess it's more abstract that way
 	}
 	
 	public void update() {

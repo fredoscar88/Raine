@@ -5,13 +5,14 @@ import com.visellico.raine.graphics.Sprite;
 
 public class WizardProjectile extends Projectile {
 
+	public static final int FIRERATE = 3;
+	
 	public WizardProjectile(int x, int y, double dir) {	//dir will probably be a double later on
 		super(x, y, dir);
 		angle = dir;
-		speed = 4;
-		range = 20;		//random vals
+		speed = 2;
+		range = random.nextInt(50) + 100;		//random vals
 		damage = 20;		// ..
-		rateOfFire = 15;	// ..
 		sprite = Sprite.projectileWizard;
 		
 		nx = speed * Math.cos(angle);	//Here's the nitty gritty, we're only travelling a length of "one" at a time. if our hypotenuse = 1, there is no need to multiply by speed.
@@ -27,18 +28,26 @@ public class WizardProjectile extends Projectile {
 	}
 	
 	public void update() {
-		if (!isRemoved()) move();
-		
+		if (level.tileCollision(x, y, nx, ny, 6)) explode();
+		move();
 	}
 	
+	
+
 	protected void move() {
 		x += nx;	//provided we still exist
 		y += ny;
 		if (distance() > range) remove();
 		
-		System.out.println("Distance: " + distance());
+		//System.out.println("Distance: " + distance());
 		
 	}
+	
+	private void explode() {
+		//release particle effects and remove
+		remove();
+	}
+
 
 	private double distance() {
 		double dist;

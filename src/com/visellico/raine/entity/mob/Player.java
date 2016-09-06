@@ -2,6 +2,7 @@ package com.visellico.raine.entity.mob;
 
 import com.visellico.raine.Game;
 import com.visellico.raine.entity.projectile.Projectile;
+import com.visellico.raine.entity.projectile.WizardProjectile;
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.graphics.Sprite;
 import com.visellico.raine.input.Keyboard;
@@ -13,6 +14,8 @@ public class Player extends Mob {
 //	private Sprite sprite;	//sprite of the player- switched around for when we animate. Funnily, we already have a sprite from mob. Let's comment this out for now..
 	private int animate = 0;
 	private boolean walking = false;
+	
+	private int fireRate = 0;
 	
 	//It may be that eventually we'll want sub-classes of player, but save that for another time, another game... (Important)
 	//default spawn point
@@ -28,6 +31,7 @@ public class Player extends Mob {
 		this.y = y;
 		this.input = input;
 		sprite = Sprite.player_back;
+		fireRate = WizardProjectile.FIRERATE;
 	}
 	
 	public void update() {
@@ -47,27 +51,32 @@ public class Player extends Mob {
 		//xa and ya are delta variables, how much it is changing
 		
 		clear();	//Gets rid of projectiles that have over travelled, travelled beyond their range
-		updateShooting();
+		if (fireRate > 0) {
+			fireRate--;
+		} else {
+			updateShooting();
+		}
 		
 	}
 	
 	private void clear() {
-		for (int i = 0; i < projectiles.size(); i++) {
-			Projectile p = projectiles.get(i);
-			if (p.isRemoved()) projectiles.remove(i);
+		for (int i = 0; i < level.getProjectiles().size(); i++) {
+			Projectile p = level.getProjectiles().get(i);
+			if (p.isRemoved()) level.getProjectiles().remove(i);
 		}
 		
 	}
 
 	private void updateShooting() {
 		
-		if (Mouse.getButton() == 1) {
+		if (Mouse.getButton() == 1 && fireRate == 0) {
 			//System.out.println(Mouse.getX() + " " + Game.getWindowWidth() / 2 + "\n" + Mouse.getY() + " " + Game.getWindowHeight() / 2);
 			double dx = Mouse.getX() - (Game.getWindowWidth()/2);	//should be pulling this from screen, but game width/height is static
 			double dy = Mouse.getY() - (Game.getWindowHeight()/2);
 			double theta = Math.atan2(dy, dx);	//Basically, if dx= 0 tan is approaching infinite. But we all know that it should be 0 so this makes it 0.
 			shoot(x, y, theta);	//Note we still use the players x y as the place to fire from!
 				//all mobs can shoot, players shoot differently which is why we're calling the super class method but doing math here
+			fireRate = WizardProjectile.FIRERATE;
 		}
 	}
 
