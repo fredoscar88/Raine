@@ -1,13 +1,14 @@
 package com.visellico.raine.entity.projectile;
 
+import com.visellico.raine.entity.spawner.ParticleSpawner;
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.graphics.Sprite;
 
 public class WizardProjectile extends Projectile {
 
-	public static final int FIRERATE = 3;
+	public static final int FIRERATE = 10;
 	
-	public WizardProjectile(int x, int y, double dir) {	//dir will probably be a double later on
+	public WizardProjectile(double x, double y, double dir) {	//dir will probably be a double later on
 		super(x, y, dir);
 		angle = dir;
 		speed = 2;
@@ -28,8 +29,12 @@ public class WizardProjectile extends Projectile {
 	}
 	
 	public void update() {
-		if (level.tileCollision(x, y, nx, ny, 6)) explode();
-		move();
+		if (level.tileCollision((int) (x + nx), (int) (y + ny), 6, 5, 5)) {
+			explode();
+		} 
+		else {
+			move();	//note how we still move even AFTER we check collision (TODO)
+		}
 	}
 	
 	
@@ -45,6 +50,8 @@ public class WizardProjectile extends Projectile {
 	
 	private void explode() {
 		//release particle effects and remove
+		//Spawner s = new Spawner((int) x, (int) y, Spawner.Type.PARTICLE, 100, level);
+		level.add(new ParticleSpawner((int) x, (int) y, 100, 50, level));
 		remove();
 	}
 

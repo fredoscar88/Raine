@@ -5,8 +5,9 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import com.visellico.raine.graphics.Screen;
-import com.visellico.raine.level.tile.Tile;
+import com.visellico.raine.entity.mob.Chaser;
+import com.visellico.raine.entity.mob.Dummy;
+import com.visellico.raine.entity.mob.Star;
 
 public class SpawnLevel extends Level {
 
@@ -37,6 +38,21 @@ public class SpawnLevel extends Level {
 			System.out.println("ERROR could not load level file");
 			e.printStackTrace();
 		}
+
+		for (int i = 0; i < 1; i++) {
+			add(new Chaser(20,55));
+		}
+		
+		for (int i = 0; i < 1; i++) {
+			add(new Star(18,45));
+		}
+		
+		for (int i = 0; i < 5; i++) {
+			add(new Dummy(20,59));
+		}
+//		Dummy dummy = new Dummy(20,59);
+//		dummy.init(level);
+//		level.add(dummy);
 	}
 
 	//Grass = 0x00FF00 (BUT I MADE COLOR CONSTANTS SO IM NOT DOING THIS)

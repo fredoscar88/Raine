@@ -11,6 +11,7 @@ import java.awt.image.DataBufferInt;
 
 import javax.swing.JFrame;
 
+import com.visellico.raine.entity.mob.Dummy;
 import com.visellico.raine.entity.mob.Player;
 //wowzer
 import com.visellico.raine.graphics.Screen;
@@ -63,7 +64,8 @@ public class Game extends Canvas implements Runnable {
 		player = new Player(playerSpawn.x(), playerSpawn.y(), key);	//adjusting player spawn. Tile sizes here are 16, multiplied by a coordinate in tile level precision, added by half a tile in pixel precision
 															//we can edit this into the constructor in the player class as well, thanks youtube comments
 															//however we just ended up using a tileCoordinate class that does 16x for us.
-		player.init(level);
+		level.add(player);
+		
 		
 		//Must do this after key is initialized
 		addKeyListener(key);	//adds this component to the canvas
@@ -139,10 +141,10 @@ public class Game extends Canvas implements Runnable {
 	public void update() {
 		
 		key.update();
-		player.update();	//screw it, player will be updated and rendered independently, at least THIS player will be.
+//		player.update();	//screw it, player will be updated and rendered independently, at least THIS player will be.
 		level.update();
 	}
-	
+
 	public void render() {
 		//for buffering frames, so that we aren't drawing them life
 		BufferStrategy bs = getBufferStrategy();	//gets the buffer strategy from this class, which extends canvas. we already have it.
@@ -153,13 +155,14 @@ public class Game extends Canvas implements Runnable {
 		}
 		
 		screen.clear();
-		int xScroll = player.x - (screen.width / 2);	//Offsets level rendering to center the player
-		int yScroll = player.y - (screen.height / 2);	//this is because the player's position would other wise be at the top left of the screen.
-		level.render(xScroll, yScroll, screen);	//So render at location of player, minus half the screen in either direction
-		player.render(screen);	//Player is rendered after other mobs because the player should render above everything else. Which means it's being rendered twice- 
+		double xScroll = player.getX() - (screen.width / 2);	//Offsets level rendering to center the player
+		double yScroll = player.getY() - (screen.height / 2);	//this is because the player's position would other wise be at the top left of the screen.
+		level.render((int) xScroll, (int) yScroll, screen);	//So render at location of player, minus half the screen in either direction
+//		player.render(screen);	//Player is rendered after other mobs because the player should render above everything else. Which means it's being rendered twice- 
 								//	I dont have a fix for this now since it should still render players from level.render (multiplayer), but I want player to belong to level 
 								//	and not be updated on it's own.
 		//screen.renderMovementPix(player.x, player.y, player.xxa, player.yya, player);
+		
 		
 		for (int i = 0; i < pixels.length; i++) {
 			pixels[i] = screen.pixels[i];

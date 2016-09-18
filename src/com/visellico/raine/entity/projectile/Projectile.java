@@ -8,7 +8,7 @@ import com.visellico.raine.graphics.Sprite;
 public abstract class Projectile extends Entity {
 	
 	protected Sprite sprite;
-	protected final int xOrigin, yOrigin;
+	protected final double xOrigin, yOrigin;
 	protected double angle;
 	protected double x, y;	//Overrides x and y from entity- since we need double floating point precision and not integers.
 	protected double nx, ny; //new x, new y; for vectors
@@ -17,7 +17,7 @@ public abstract class Projectile extends Entity {
 	
 	protected final Random random = new Random();
 	
-	public Projectile(int x, int y, double dir) {
+	public Projectile(double x, double y, double dir) {
 		xOrigin = x;
 		yOrigin = y;
 		this.x = x;

@@ -3,12 +3,13 @@ package com.visellico.raine.entity;
 import java.util.Random;
 
 import com.visellico.raine.graphics.Screen;
+import com.visellico.raine.graphics.Sprite;
 import com.visellico.raine.level.Level;
 								//cant be instantiated which is A-OKAY
 public abstract class Entity {	//abstract because this is a template, a framework- there will never be just an "entity" created, it will always be a type of entity
 	
-						
-	public int x, y;	//location- probably not based on pixels but just the x,y for all tiles/pixels in the map
+	protected Sprite sprite;					
+	public double x, y;	//location- probably not based on pixels but just the x,y for all tiles/pixels in the map
 						//x,y redundant if we dont have a sprite
 	
 	//NB: (IMPORTANT) Instance variables, stuff defined OUTSIDE of methods, start with default values filled with 0s. Implicitly initialized with the default value of its type. 
@@ -23,6 +24,7 @@ public abstract class Entity {	//abstract because this is a template, a framewor
 	}
 	
 	public void render(Screen screen) {
+		if (sprite != null) screen.renderSprite((int) Math.round(x), (int) Math.round(y), sprite, true);
 	}
 	
 	/**
@@ -31,6 +33,20 @@ public abstract class Entity {	//abstract because this is a template, a framewor
 	public void remove() {
 		//Remove from level
 		removed = true;
+	}
+	
+	public Sprite getSprite() {
+		
+		return sprite;
+		
+	}
+	
+	public double getX() {
+		return x;
+	}
+	
+	public double getY() {
+		return y;
 	}
 	
 	public boolean isRemoved() {

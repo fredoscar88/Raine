@@ -3,8 +3,9 @@ package com.visellico.raine.graphics;
 public class Sprite {
 
 	public final int SIZE;	//size of this sprite
+	private int width, height;	//w,h of sprite when non-square (where SIZE would normally be both for square ones)
 	private int x,y;	//Coordinates of the sprite on the sprite sheet in gridsize
-	private SpriteSheet sheet;	//sheet that this exists on
+	SpriteSheet sheet;	//sheet that this exists on
 	
 	public int[] pixels;	//may not need this to be public
 	
@@ -45,10 +46,23 @@ public class Sprite {
 //-----------WIZARD PROJECTILE SPRITES-------------//
 	public static Sprite projectileWizard = new Sprite(16,0, 0, SpriteSheet.wizardProjectiles);
 	
+//-----------PARTICLES-----------------------------//
+	public static Sprite particle_normal = new Sprite(3, 0xAAAADD);
+	//public static Sprite particle_normal = new Sprite(3, 0xAA0000);
+	
+	protected Sprite(SpriteSheet sheet, int width, int height) {
+		
+		this.SIZE = (width == height) ? width : -1;	//ternary operations! If square, SIZE is our new dimension. Else size is set to "unused"
+		this.width = width;
+		this.height = height;
+		this.sheet = sheet;
+	}
 	
 	//Loads a sprite from the sprite sheet for the new sprite
 	public Sprite(int size, int x, int y, SpriteSheet sheet) {
 		this.SIZE = size;
+		this.width = size;
+		this.height = size;
 		pixels = new int[SIZE*SIZE];
 		this.x = x * SIZE;	//the XY come as grid coordinates. The X and Y are not pixels, they are grid locations, and the locations are all 16x, so multiply
 		this.y = y * SIZE;	//each by 16 to get what the their pixel value would be.
@@ -57,9 +71,21 @@ public class Sprite {
 		
 	}
 	
+	//loads a non-square sprite, of a specific color (like void sprite)
+	public Sprite(int w, int h, int color) {
+		this.SIZE = -1;	//unused for non-square sprites, but generally used as a width
+		this.width = w;
+		this.height = h;
+		pixels = new int[width * height];
+		setColor(color);
+		
+	}
+	
 	//Uniformly colors the new sprite with one color
 	public Sprite(int size, int color) {	//color should be delivered as a hex value
 		this.SIZE = size;
+		this.width = size;
+		this.height = size;
 		pixels = new int[SIZE * SIZE];
 		setColor(color);	//Colors the entire Sprite a uniform hexadecimal color
 	}
@@ -68,39 +94,57 @@ public class Sprite {
 	//	the sprite @render time which is what Im going to do, but I'll leave this method here. just in casies. Also proof for myself that I knew what to do. 
 	//	Even if I had to work it out on pen&paper
 	//Creates an a sprite inverted across the y axis (flips all x values)
-	public Sprite(Sprite sprite) {
-		this.SIZE = sprite.SIZE;
-		
-		this.pixels = new int[SIZE * SIZE];
-		
-		for (int y = 0; y < SIZE; y++) {
-			for (int x = 0; x < SIZE; x++) {
-				this.pixels[x + y * SIZE] = sprite.pixels[((SIZE - 1) - x) + y * SIZE];	//((axisOfInversion - x) + axisOfInversion)
-			}
-		}
-		
-//		for (int i = 0; i < this.pixels.length; i++) {
-//			if (i % SIZE < axisOfInversion) {
-//				this.pixels[i] = sprite.pixels[(axisOfInversion - (i % SIZE)) + axisOfInversion];
+//	public Sprite(Sprite sprite) {
+//		this.SIZE = sprite.SIZE;
+//		
+//		this.pixels = new int[SIZE * SIZE];
+//		
+//		for (int y = 0; y < SIZE; y++) {
+//			for (int x = 0; x < SIZE; x++) {
+//				this.pixels[x + y * SIZE] = sprite.pixels[((SIZE - 1) - x) + y * SIZE];	//((axisOfInversion - x) + axisOfInversion)
 //			}
 //		}
-		
-	}
+//		
+////		for (int i = 0; i < this.pixels.length; i++) {
+////			if (i % SIZE < axisOfInversion) {
+////				this.pixels[i] = sprite.pixels[(axisOfInversion - (i % SIZE)) + axisOfInversion];
+////			}
+////		}
+//		
+//	}
 	
+	public Sprite(int[] spritePixels, int width, int height) {
+		this.SIZE = (width == height) ? width : -1;
+		this.width = width;
+		this.height = height;
+		pixels = spritePixels;
+//		for (int i = 0; i < spritePixels.length; i++) {
+//			pixels[i] = spritePixels[i];
+//		}
+	}
+
 	//This seems unnecessary, unless we want to change the color during runtime :S
 	private void setColor(int color) {
-		for (int i = 0; i < pixels.length; i++) {
+		for (int i = 0; i < pixels.length; i++) {	//length = width * height or SIZE^2
 			pixels[i] = color;
 		}
 	}
 	
+	public int getWidth() {
+		return width;
+	}
+	
+	public int getHeight() {
+		return height;
+	}
+	
 	private void load() {
 		
-		for (int y = 0; y < SIZE; y++) {
-			for (int x = 0; x < SIZE; x++) {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
 				
 				//"coordinate" stuff similar to what we find in Screen for drawing
-				pixels [x+y*SIZE] = sheet.pixels[(x+this.x) + (y + this.y)*sheet.SIZE];
+				pixels [x+y*SIZE] = sheet.pixels[(x+this.x) + (y + this.y)*sheet.WIDTH];
 				
 			}
 		}

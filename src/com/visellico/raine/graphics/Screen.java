@@ -1,5 +1,8 @@
 package com.visellico.raine.graphics;
 
+import com.visellico.raine.entity.mob.Chaser;
+import com.visellico.raine.entity.mob.Mob;
+import com.visellico.raine.entity.mob.Star;
 import com.visellico.raine.entity.projectile.Projectile;
 import com.visellico.raine.level.tile.Tile;
 
@@ -25,6 +28,52 @@ public class Screen {
 		}
 	}
 	
+	public void renderSheet(int xp, int yp, SpriteSheet sheet, boolean fixed) {
+		
+		if (fixed) {	//When fixed, xp and yp represent x and y positions relative to a defined origin- the upper left corner of our map
+			xp -= xOffset;
+			yp -= yOffset;
+		}
+		//when not fixed, represent the relative position on screen.
+		
+		for (int y = 0; y < sheet.HEIGHT; y++) {
+			int ya = y + yp;
+			for (int x = 0; x < sheet.WIDTH; x++) {
+				int xa = x + xp;
+				if (xa < 0 || xa >= width || ya < 0 || ya >= height) continue;
+				pixels[xa + ya * width] = sheet.pixels[x + y * sheet.WIDTH];	//we can explain what's going on here now, so no need to comment- see renderTile
+				//could render these w/o the pink. But I think we need to stick with simpler sprites for particles, large ones create a bit of jerkiness.
+			}
+		}
+		
+	}
+	
+	/**
+	 * Draws a sprite to the screen, with the ability to fix it relative to the screen.
+	 * @param xp X Location of sprite either ABSOLUTE (on map) or RELATIVE (on screen)
+	 * @param yp Y Location of sprite either ABSOLUTE (on map) or RELATIVE (on screen)
+	 * @param sprite Sprite to draw
+	 * @param fixed FALSE when RELATIVE; TRUE when ABSOLUTE
+	 */
+	public void renderSprite(int xp, int yp, Sprite sprite, boolean fixed) {
+		
+		if (fixed) {	//When fixed, xp and yp represent x and y positions relative to a defined origin- the upper left corner of our map
+			xp -= xOffset;
+			yp -= yOffset;
+		}
+		//when not fixed, represent the relative position on screen.
+		
+		for (int y = 0; y < sprite.getHeight(); y++) {
+			int ya = y + yp;
+			for (int x = 0; x < sprite.getWidth(); x++) {
+				int xa = x + xp;
+				if (xa < 0 || xa >= width || ya < 0 || ya >= height) continue;
+				pixels[xa + ya * width] = sprite.pixels[x + y * sprite.getWidth()];	//we can explain what's going on here now, so no need to comment- see renderTile
+				//could render these w/o the pink. But I think we need to stick with simpler sprites for particles, large ones create a bit of jerkiness.
+			}
+		}
+		
+	}
 	//offset based system of render, factor players position then offset. The alternative is managing tiles pos seperately, not practical (ep 28 ~2:20)
 	//separate method for each type of rendering we have
 	/**
@@ -84,7 +133,7 @@ public class Screen {
 	 */
 	//For flipState, I used earlier "boolean invert" for if the x was inverted- but the thing is, it's not very versatile. There may come a day I want to flip all over the place.
 	//	so yeah Ill stick with more states
-	public void renderPlayer(int xp, int yp, Sprite sprite, int flipState) {
+	public void renderMob(int xp, int yp, Sprite sprite, int flipState) {
 		xp -= xOffset;
 		yp -= yOffset;
 		for (int y = 0; y < sprite.SIZE; y++) {	//we KNOW players are all the same size. But yet. But yet. who knows.
@@ -101,6 +150,28 @@ public class Screen {
 				if (xa < 0 || xa >= width || ya < 0 || ya >= height) continue;
 				
 				int col = sprite.pixels[xModified + yModified * sprite.SIZE];
+				if (col != 0xffff00ff) pixels[xa+ya*width] = col;	//If the color is pink (we also count the alpha channel, the first two hex digits), then just don't... draw the pixel
+					
+			}
+		}		
+	}
+	
+	public void renderMob(int xp, int yp, Mob mob) {
+		xp -= xOffset;
+		yp -= yOffset;
+		for (int y = 0; y < mob.getSprite().SIZE; y++) {	//we KNOW players are all the same size. But yet. But yet. who knows.
+			int ya = y + yp;
+			int yModified = y;
+			
+			for (int x = 0; x < mob.getSprite().SIZE; x++) {
+				int xa = x + xp;
+				int xModified = x;
+				
+				if (xa < 0 || xa >= width || ya < 0 || ya >= height) continue;
+				
+				int col = mob.getSprite().pixels[xModified + yModified * mob.getSprite().SIZE];
+				if (mob instanceof Chaser && col == 0xff472BBF) col = 0xffBA0015;
+				if (mob instanceof Star && col == 0xff472BBF) col = 0xffE8E83A;
 				if (col != 0xffff00ff) pixels[xa+ya*width] = col;	//If the color is pink (we also count the alpha channel, the first two hex digits), then just don't... draw the pixel
 					
 			}
