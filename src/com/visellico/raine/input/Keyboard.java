@@ -7,7 +7,7 @@ public class Keyboard implements KeyListener {
 
 	private boolean[] keys = new boolean[120];
 	public boolean up, down, left, right;	//Did we press a key corresponding to one of these movements?
-	public boolean mmUp, mmDown;
+	public boolean manUp, manDown;
 	
 	public void update() {
 		
@@ -15,8 +15,8 @@ public class Keyboard implements KeyListener {
 		down = keys[KeyEvent.VK_DOWN] || keys[KeyEvent.VK_S];
 		left = keys[KeyEvent.VK_LEFT] || keys[KeyEvent.VK_A];
 		right = keys[KeyEvent.VK_RIGHT] || keys[KeyEvent.VK_D];
-		mmUp = keys[KeyEvent.VK_R];
-		mmDown = keys[KeyEvent.VK_F];
+		manUp = keys[KeyEvent.VK_R];
+		manDown = keys[KeyEvent.VK_F];
 		
 //		for (int i = 0; i < keys.length; i++) {
 //			

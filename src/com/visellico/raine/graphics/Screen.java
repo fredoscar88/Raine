@@ -12,8 +12,9 @@ public class Screen {
 	public int[] pixels;
 	
 	public int xOffset, yOffset;
+	public static final int ALPHA_COL = 0xffff00ff;
+	public static final int ALPHA_COL2 = 0xff7F007F;
 	
-
 	public Screen(int width, int height) {
 		
 		this.width = width; 
@@ -68,12 +69,79 @@ public class Screen {
 			for (int x = 0; x < sprite.getWidth(); x++) {
 				int xa = x + xp;
 				if (xa < 0 || xa >= width || ya < 0 || ya >= height) continue;
-				pixels[xa + ya * width] = sprite.pixels[x + y * sprite.getWidth()];	//we can explain what's going on here now, so no need to comment- see renderTile
+				int col = sprite.pixels[x + y * sprite.getWidth()];
+				if (col != ALPHA_COL && col!= ALPHA_COL2) pixels[xa + ya * width] = col;	//If the color is pink (we also count the alpha channel, the first two hex digits), then just don't... draw the pixel
+//				pixels[xa + ya * width] = sprite.pixels[x + y * sprite.getWidth()];	//we can explain what's going on here now, so no need to comment- see renderTile
 				//could render these w/o the pink. But I think we need to stick with simpler sprites for particles, large ones create a bit of jerkiness.
 			}
 		}
 		
 	}
+	
+	public void renderTextCharacter(int xp, int yp, Sprite sprite, int color, boolean fixed) {
+		
+		if (fixed) {	//When fixed, xp and yp represent x and y positions relative to a defined origin- the upper left corner of our map
+			xp -= xOffset;
+			yp -= yOffset;
+		}
+		//when not fixed, represent the relative position on screen.
+		
+		for (int y = 0; y < sprite.getHeight(); y++) {
+			int ya = y + yp;
+			for (int x = 0; x < sprite.getWidth(); x++) {
+				int xa = x + xp;
+				if (xa < 0 || xa >= width || ya < 0 || ya >= height) continue;
+				int col = sprite.pixels[x + y * sprite.getWidth()];
+				if (col != ALPHA_COL && col!= ALPHA_COL2) pixels[xa + ya * width] = color;	//If the color is pink (we also count the alpha channel, the first two hex digits), then just don't... draw the pixel
+//				pixels[xa + ya * width] = sprite.pixels[x + y * sprite.getWidth()];	//we can explain what's going on here now, so no need to comment- see renderTile
+				//could render these w/o the pink. But I think we need to stick with simpler sprites for particles, large ones create a bit of jerkiness.
+			}
+		}
+		
+	}
+
+	//MY DRAW RECT maybe just as efficient, maybe not as efficient. Looks like not as efficient since I do twice as many goarounds
+	/*public void drawRect(int xp, int yp, int width, int height, int color, boolean fixed) {
+		if (fixed) {
+			xp -= xOffset;
+			yp -= yOffset;
+		}
+		
+		for (int y = 0; y < (2 * height); y++) {
+			int ya = y / height;
+			pixels[(xp + (ya * width)) + (yp + y - height * ya) * this.width] = color;
+		}
+		for (int x = 0; x < (2 * width); x++) {
+			int xa = x / width;
+			pixels[(xp + x - width * xa) + (yp + (xa * height)) * this.width] = color;
+		}
+		pixels[xp + width + (yp + height) * this.width] = color;
+		
+	}*/
+	
+	public void drawRect(int xp, int yp, int width, int height, int color, boolean fixed) {
+		if (fixed) {
+			xp -= xOffset;
+			yp -= yOffset;
+		}
+		
+		for (int x = xp; x < xp + width; x++) {
+			if (x < 0 || x >= this.width || yp >= this.height) continue;
+			if (yp > 0) pixels[x + yp * this.width] = color;
+			if (yp + height >= this.height) continue;	//Also TODO get understood this rectangle stuff.
+			if (yp + height > 0) pixels[x + (yp + height) * this.width] = color;
+		}
+		for (int y = yp; y <= yp + height; y++) {	//<= here to cover our last pixel. It is being rendered twice doe but w/e. I think that goes for everything.
+			if (xp >= this.width || y < 0 || y >= this.height) continue;
+			if (xp > 0) pixels[xp + y * this.width] = color;
+			if (xp + width >= this.width) continue;
+			if (xp + width > 0) pixels[(xp + width) + y * this.width] = color;	//dont need to wrap (xp + width) since math reasons
+		}
+		//this also would have covered the last pixel, albeit less efficiently
+//		if (!(xp + width < 0 || xp + width >= this.width || yp + height < 0 || yp + height >= this.height)) pixels[xp + width + (yp + height) * this.width] = color;	//last pixel of the rect
+		
+	}
+	
 	//offset based system of render, factor players position then offset. The alternative is managing tiles pos seperately, not practical (ep 28 ~2:20)
 	//separate method for each type of rendering we have
 	/**
@@ -84,7 +152,7 @@ public class Screen {
 	 */
 	public void renderTile(int xp, int yp, Tile tile) { 
 		//Tile OR a Sprite could have been used- Tile here because what if water is animated in the future or what if we change the sprite
-		
+//		System.out.println(tile);
 //		xp = xp << 4;	should handle this in the actual tile folder I reckon since size is going to be not-guaranteed @16
 //		yp = yp << 4;	this is converting from pixel to tile precision, but again handling it @the tile classes b.c they will have diff sizes
 		
@@ -104,7 +172,7 @@ public class Screen {
 				//	any OOB y pixels but would break out of the x loop whenever a y pixel was illegal, cycling until it found a legal y pixel. Hence why top screen has always worked.
 				if (xa < 0 || xa >= width || ya < 0 || ya >= height) continue;	//dont render tile (pixel really) if it is out of screen. also it will(read: could) crash if we dont include this :I (array index out of bounds). 
 				pixels[xa+ya*width] = tile.sprite.pixels[x + y * tile.sprite.SIZE];	//location on the screen is offset, but when pulling pixels from the sprite it isn't offset! hence no ya,xa
-				
+//				System.out.println(pixels[xa + ya * width]);
 				
 				//Well, as for the walltext below, TheCherno used my solution for right/bottom (expanding rendering zone w/corner pins), but my left screen shit is better. Continue and not Break. whew.
 				//What he did was if xa < 0 then xa = 0
@@ -150,7 +218,7 @@ public class Screen {
 				if (xa < 0 || xa >= width || ya < 0 || ya >= height) continue;
 				
 				int col = sprite.pixels[xModified + yModified * sprite.SIZE];
-				if (col != 0xffff00ff) pixels[xa+ya*width] = col;	//If the color is pink (we also count the alpha channel, the first two hex digits), then just don't... draw the pixel
+				if (col != ALPHA_COL) pixels[xa+ya*width] = col;	//If the color is pink (we also count the alpha channel, the first two hex digits), then just don't... draw the pixel
 					
 			}
 		}		
@@ -172,7 +240,7 @@ public class Screen {
 				int col = mob.getSprite().pixels[xModified + yModified * mob.getSprite().SIZE];
 				if (mob instanceof Chaser && col == 0xff472BBF) col = 0xffBA0015;
 				if (mob instanceof Star && col == 0xff472BBF) col = 0xffE8E83A;
-				if (col != 0xffff00ff) pixels[xa+ya*width] = col;	//If the color is pink (we also count the alpha channel, the first two hex digits), then just don't... draw the pixel
+				if (col != ALPHA_COL) pixels[xa+ya*width] = col;	//If the color is pink (we also count the alpha channel, the first two hex digits), then just don't... draw the pixel
 					
 			}
 		}		
@@ -188,12 +256,13 @@ public class Screen {
 				if (xa < 0 || xa >= width || ya < 0 || ya >= height) continue;
 				
 				int col = p.getSprite().pixels[x + y * p.getSpriteSize()];
-				if (col != 0xFFFF00FF) pixels[xa+ya*width] = col;
+				if (col != ALPHA_COL) pixels[xa+ya*width] = col;
 //				 = p.sprite.pixels[x + y * p.sprite.SIZE];
 				
 			}
 		}
 	}
+	
 	
 	//Offset is also = to player position
 	//Offset created by the player after movement; manipulates offset present in renderTile()
@@ -202,6 +271,7 @@ public class Screen {
 		this.xOffset = xOffset;
 		this.yOffset = yOffset;
 	}
+
 
 
 

@@ -5,14 +5,15 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import com.visellico.raine.Game;
-
 //in charge of any sprite sheets and caching to memory, a variable
 public class SpriteSheet {
 
 	private String path;	//path to this spritesheet
 	public final int SIZE;	//sprite sheet is square, so only one dimension is needed. LOL now we have two dimensions, bitches
-	public final int WIDTH, HEIGHT;
+	public final int WIDTH, HEIGHT;	//I guess these are in sprite precision... oh no, it's the width and height of each SPRITE. This is why my method split() in Sprite messed up... (todo)
+						//well nope. SPRITEWIDTH and SPRITEHEIGHT are definitely NOT sprite width, sprite height.
+	public final int SPRITE_WIDTH = 16, SPRITE_HEIGHT = 16;
+	public int width, height;	//w and h of the actual sprite sheet
 	public int[] pixels;
 	
 	//start off path WITH a forward slash
@@ -38,7 +39,7 @@ public class SpriteSheet {
 	//create sheet from another sheet (sub sheet)
 	public SpriteSheet(SpriteSheet sheet, int x, int y, int width, int height, int spriteSize) {	//may not need spriteSize parameter
 		
-		//PUTS X, Y, WIDTH, HEIGHT in PIXEL PRECISION from what we're given, SPRITE PRECEISION;
+		//PUTS X, Y, WIDTH, HEIGHT in PIXEL PRECISION from what we're given, SPRITE PRECISION;
 		int xx = x * spriteSize;
 		int yy = y * spriteSize;
 		int w = width * spriteSize;
@@ -123,9 +124,17 @@ public class SpriteSheet {
 		
 	}
 
+	public int getWidth() {
+		return width;
+	}
+	public int getHeight() {
+		return height;
+	}
+	
 	private void load() {
 		
 		try {
+			System.out.print("Trying to load: " + path);
 											/*
 											 * In my interpretation, class.getResource() is for loading a resource into a memory cache
 											 * okay, great lost my train of thought.
@@ -136,14 +145,20 @@ public class SpriteSheet {
 											 */
 			BufferedImage image = ImageIO.read(SpriteSheet.class.getResource(path));	//whew (TODO) get understood; ep 19 of TheCherno. ~9-10 min mark
 			//Buffered Image loads the alpha channel, too
-			int w = image.getWidth();
-			int h = image.getHeight();
-			image.getRGB(0, 0, w, h, pixels, 0, w);	//(TODO) get understood. This puts the image pixels into the pixels array
+			System.out.println(" succeeded!");
+			width = image.getWidth();
+			height = image.getHeight();
+			image.getRGB(0, 0, width, height, pixels, 0, width);	//(TODO) get understood. This puts the image pixels into the pixels array
 			
 		} catch (IOException e) {
 			e.printStackTrace();
-		}	
+			System.err.println(" failed!");
+		}	//could do a finally to do our println since we lack that 'ln' up top
 		
+	}
+
+	public int[] getPixels() {
+		return pixels;
 	}
 	
 }

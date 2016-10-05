@@ -11,10 +11,10 @@ public class WizardProjectile extends Projectile {
 	public WizardProjectile(double x, double y, double dir) {	//dir will probably be a double later on
 		super(x, y, dir);
 		angle = dir;
-		speed = 2;
-		range = random.nextInt(50) + 100;		//random vals
+		speed = 1.5;
+		range = random.nextInt(50) + 100;	//random vals
 		damage = 20;		// ..
-		sprite = Sprite.projectileWizard;
+		sprite = Sprite.rotate(Sprite.projectileArrow, dir);	//projectileArrow;
 		
 		nx = speed * Math.cos(angle);	//Here's the nitty gritty, we're only travelling a length of "one" at a time. if our hypotenuse = 1, there is no need to multiply by speed.
 		ny = speed * Math.sin(angle);	// Since speed would be 1, and 1 * Math.cos(angle) == Math.cos(angle). But speed is not 1! Trigonometry woo I know this stuff already.
@@ -28,14 +28,18 @@ public class WizardProjectile extends Projectile {
 		//projectile to pass through the point that we click on (rendering wise and logic wise)
 	}
 	
+	
 	public void update() {
+		
 		if (level.tileCollision((int) (x + nx), (int) (y + ny), 6, 5, 5)) {
 			explode();
 		} 
 		else {
 			move();	//note how we still move even AFTER we check collision (TODO)
 		}
+		
 	}
+	
 	
 	
 

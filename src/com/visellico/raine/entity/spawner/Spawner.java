@@ -12,7 +12,7 @@ public class Spawner extends Entity {
 	private Type type;
 	
 	/**
-	 * Creates a new spawner
+	 * Creates a new spawner. IMPORTANT: Spawners do not have update or render methods
 	 * @param x X coordinate of spawner
 	 * @param y Y coordinate of spawner
 	 * @param type Type of entity to spawn

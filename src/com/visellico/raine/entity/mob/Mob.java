@@ -3,9 +3,9 @@ package com.visellico.raine.entity.mob;
 import com.visellico.raine.entity.Entity;
 import com.visellico.raine.entity.projectile.Projectile;
 import com.visellico.raine.entity.projectile.WizardProjectile;
+import com.visellico.raine.entity.spawner.ParticleSpawner;
 import com.visellico.raine.graphics.AnimatedSprite;
 import com.visellico.raine.graphics.Screen;
-import com.visellico.raine.graphics.Sprite;
 
 public abstract class Mob extends Entity {
 	
@@ -20,6 +20,8 @@ public abstract class Mob extends Entity {
 	protected boolean moving = false;
 	protected boolean walking = false;	//unused
 	protected double speed = 1;	//default speed
+	protected int health;
+	int maxHealth = 100;
 	
 	protected boolean ignoreCollision = false;
 	
@@ -105,13 +107,35 @@ public abstract class Mob extends Entity {
 		
 	}
 	
+	/**
+	 * Teleports a mob to the given location
+	 * @param xDest X coordinate of location
+	 * @param yDest	Y coordinate of location
+	 * @param effectLeave Effect to play at Mob's position before teleporting
+	 * @param effectArrive Effect to play when mob arrives
+	 * @param delay Delay, measured in seconds
+	 */
+	public void Teleport(int xDest, int yDest, ParticleSpawner effectLeave, ParticleSpawner effectArrive, int delay) {
+		//this is going to be complicated, because I would like a delay that causes immobilization. But this needs to be dispatched as an event of sorts, frankly!
+		//	Because how am I going to keep track of when someone should teleport? So with the event dispatching stuff, I should be able to set one that carries out
+		//	teleportation. But when it does that it also needs to destroy the lambda or interface or whatever we created when we called the event, I guess i can add it to a list 
+		//	in such an event dispatching class that is run through every update cycle which clears itself out , destorying object references.
+		//this also lets us do stuff that needs to be done for X seconds or whatever like an AOE heal that is called every update for 60X updates
+		//	I would call them TimedEvents, create a whole class for it
+	}
+	
 	//weird absolute thing. consolidates the whole numberline down to -1 and 1.
 	private int abs(Double d) {
 		if (d < 0) return -1;
 		return 1;
 	}
-	
-	protected void shoot(double x, double y, double dir) {
+	/**
+	 * Shoots a (wizard) projectile
+	 * @param x X origin of projectile
+	 * @param y Y origin of projectile
+	 * @param dir Angle (in radians) of shot
+	 */
+	protected void shoot(double x, double y, double dir) {	//this should really accept a parameter for the type of projectile, the type of projectile being stored in shooting mobs.
 //		dir *= 180 / Math.PI;	//convert to degrees
 		Projectile p = new WizardProjectile(x,y, dir); //notsure how I feel about this cast
 //		level.getProjectiles().add(p);	//the projectile belongs to this mob, so we add it to this mob's collection of projectiles
@@ -155,5 +179,18 @@ public abstract class Mob extends Entity {
 		*/
 	}
 	
-
+	/**
+	 * Gets the distance of this mob from the given coordinates. Counter part to the level method that returns all mobs (players?) within a certain distance.
+	 * @param x X coordinate
+	 * @param y Y Coordinate
+	 * @return Distance of mob from x,y
+	 */
+	public double getDistance(double x, double y) {
+		
+		double dx = (this.x - x);
+		double dy = (this.y - y);
+		
+		return Math.sqrt((dx * dx) + (dy * dy));
+	}
+	
 }

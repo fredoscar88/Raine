@@ -3,7 +3,6 @@ package com.visellico.raine;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
@@ -11,10 +10,10 @@ import java.awt.image.DataBufferInt;
 
 import javax.swing.JFrame;
 
-import com.visellico.raine.entity.mob.Dummy;
 import com.visellico.raine.entity.mob.Player;
 //wowzer
 import com.visellico.raine.graphics.Screen;
+import com.visellico.raine.graphics.ui.UIManager;
 import com.visellico.raine.input.Keyboard;
 import com.visellico.raine.input.Mouse;
 import com.visellico.raine.level.Level;
@@ -24,9 +23,11 @@ public class Game extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static int width = 300;	//resolution
-	private static int height = width / 16 * 9; //aspect ratio 16:9 ||| 168
-	private static int scale = 3;	//How much the game will be scaled- multiply width/height
+	//width of our game viewing area.... (TODO) this really probably should just be a representation of thw window width, not our main viewing port.
+	//Why? Because it makes more sense that way. we are accommodating for it when we set the Dimension.
+	public static int width = 300 - 80;	//resolution
+	public static int height = 168;//width / 16 * 9; //aspect ratio 16:9 ||| 168
+	public static int scale = 3;	//How much the game will be scaled- multiply width/height
 		//however we are only rendering for the 300 16:9, it's just scaled up
 	
 	//---------- game stuff
@@ -35,37 +36,39 @@ public class Game extends Canvas implements Runnable {
 	private Player player;
 	//----------
 	
-	
 	private Thread thread;
 	private JFrame frame;	//ugh
 	public final static String title = "Raine";
 	private boolean running = false;
 	
+	private static UIManager uiManager;	
 	private Screen screen;
 	private Keyboard key;
 	
 	//image to draw things, I guess this goes on the graphics, which goes on the buffer strategy which goes on the canvas
+	//here we could use a widthGame
 	private BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB); //not scaling w/h, no alpha
 	private int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();/*raster- rectangular array of pixels*/
 										//image -> raster (array of pixels) -> data buffer, which handles the raster
 	
 	public Game() {
 		
-		Dimension size = new Dimension(width*scale, height*scale);	//note that scaling by three makes our pixels effectively 3^2 larger. just like if it was dragged out by a click
+		Dimension size = new Dimension(width*scale + 80*scale, height*scale);	//note that scaling by three makes our pixels effectively 3^2 larger. just like if it was dragged out by a click
 		setPreferredSize(size);	//comes from Canvas; java.awt.component, canvas extends component
 		
+		//widthGame (sense graphics g doesnt use the screen renderer
 		screen = new Screen(width, height);	//not scaled either, I guess
 		frame = new JFrame();
 		key = new Keyboard();
 		level = Level.spawn;	//new SpawnLevel("/levels/spawn.png");	//starts @spawn
 //		level = new RandomLevel(64,64);
+		uiManager = new UIManager();	//creating this BEFORE the player since player references this in it's constructor. Im fairly certain we can create it after if we wanted to, tho
 		//player = new Player(key);
 		TileCoordinate playerSpawn = new TileCoordinate(20, 59);
-		player = new Player(playerSpawn.x(), playerSpawn.y(), key);	//adjusting player spawn. Tile sizes here are 16, multiplied by a coordinate in tile level precision, added by half a tile in pixel precision
+		player = new Player("Fredo", playerSpawn.x(), playerSpawn.y(), key);	//adjusting player spawn. Tile sizes here are 16, multiplied by a coordinate in tile level precision, added by half a tile in pixel precision
 															//we can edit this into the constructor in the player class as well, thanks youtube comments
 															//however we just ended up using a tileCoordinate class that does 16x for us.
-		level.add(player);
-		
+		level.add(player);		
 		
 		//Must do this after key is initialized
 		addKeyListener(key);	//adds this component to the canvas
@@ -73,6 +76,12 @@ public class Game extends Canvas implements Runnable {
 		addMouseListener(mouse);
 		addMouseMotionListener(mouse);
 		
+		
+		
+	}
+	
+	public static UIManager getUIMananger() {
+		return uiManager;
 	}
 	
 	//synchronized - to avoid memory conflicts, or overlapping. dont want to screw up.
@@ -143,8 +152,9 @@ public class Game extends Canvas implements Runnable {
 		key.update();
 //		player.update();	//screw it, player will be updated and rendered independently, at least THIS player will be.
 		level.update();
+		uiManager.update();
 	}
-
+//	int colorChange = 0;
 	public void render() {
 		//for buffering frames, so that we aren't drawing them life
 		BufferStrategy bs = getBufferStrategy();	//gets the buffer strategy from this class, which extends canvas. we already have it.
@@ -164,14 +174,29 @@ public class Game extends Canvas implements Runnable {
 		//screen.renderMovementPix(player.x, player.y, player.xxa, player.yya, player);
 		
 		
+//		font.render(10, 10, -3, 0x00ffff, Integer.toString(Screen.ROTATE), screen);
+//		Debug.drawText(Integer.toString(Screen.ROTATE), screen);
+//		colorChange+=1000;
 		for (int i = 0; i < pixels.length; i++) {
-			pixels[i] = screen.pixels[i];
+			pixels[i] = screen.pixels[i]; //NO NO NO seizure warning - colorChange ;//-100000000;//- 10050;	WOO COLOR CHANGING
 		}
+		//using our own custom rendering lets us control the screen better! But we are gunna use java's 2d rendering for our UI (TODO)
+		//this overlays
 		
 		Graphics g = bs.getDrawGraphics();	//Graphics links to buffer, a context to draw to the buffer, the graphics of the bugger
-		g.drawImage(image, 0, 0, getWidth(), getHeight() , null);
-		g.setColor(Color.WHITE);
-		g.setFont(new Font("Verdana", 0, 50));
+		g.setColor(new Color(0xFF00FF));
+		g.fillRect(0, 0, (width + 80)*3, (height)*3); //debug, lets us now when stuff isnt being rendered.
+		//widthGame
+		g.drawImage(image, 0, 0, width * scale, height * scale , null);	//this is like a strobe light if you reduce the getwidth, getheight :I
+		uiManager.render(g);	//to reiterate, we're using Java's own graphics object, instead of our engine, to render UI elements.
+			//note if we were using java's graphics object for stuff other than just UIManager, then we'd really be better suited putting all of our graphics related stuff into a
+			//	seperate class file for some good ol' OOP
+		
+//		g.setFont(new java.awt.Font("Helvetica", 0, 15));
+//		g.setColor(Color.WHITE);
+//		g.drawString("Hello", 50, 50);
+//		g.setColor(Color.WHITE);
+//		g.setFont(new Font("Verdana", 0, 50));
 		//g.fillRect(Mouse.getX() - 32, Mouse.getY() - 32, 64, 64);
 		//g.drawString("Button: " + Mouse.getButton(), 50, 50);
 		g.dispose();	//free the resources that we arent using- they arent even being displayed, would crash

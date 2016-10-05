@@ -5,9 +5,8 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import com.visellico.raine.entity.mob.Chaser;
 import com.visellico.raine.entity.mob.Dummy;
-import com.visellico.raine.entity.mob.Star;
+import com.visellico.raine.entity.mob.Shooter;
 
 public class SpawnLevel extends Level {
 
@@ -25,7 +24,7 @@ public class SpawnLevel extends Level {
 
 	protected void loadLevel(String path) {
 		try {
-			BufferedImage image = ImageIO.read(SpawnLevel.class.getResource(path));
+			BufferedImage image = ImageIO.read(SpawnLevel.class.getResource(path));	//getResourceAsStream?
 ////		int w = image.getWidth();
 ////		int h = image.getHeight();
 			//int w = width = image.getWidth();	what TheCherno is using. dunno why he has extra w/h variables
@@ -38,17 +37,21 @@ public class SpawnLevel extends Level {
 			System.out.println("ERROR could not load level file");
 			e.printStackTrace();
 		}
-
+		
 		for (int i = 0; i < 1; i++) {
+			add(new Shooter(16, 55));
+		}
+		
+		/*for (int i = 0; i < 1; i++) {
 			add(new Chaser(20,55));
 		}
 		
 		for (int i = 0; i < 1; i++) {
 			add(new Star(18,45));
 		}
-		
-		for (int i = 0; i < 5; i++) {
-			add(new Dummy(20,59));
+		*/
+		for (int i = 0; i < 1; i++) {
+			add(new Dummy(16,59));
 		}
 //		Dummy dummy = new Dummy(20,59);
 //		dummy.init(level);

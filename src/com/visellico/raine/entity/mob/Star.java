@@ -32,14 +32,6 @@ public class Star extends Mob {
 		speed = .8;
 	}
 	
-	private double calculateDistance(int x1, int y1, int x2, int y2) {
-		double xd1 = (double) x1;
-		double yd1 = (double) y1;
-		double xd2 = (double) x2;
-		double yd2 = (double) y2;
-		
-		return Math.sqrt(((xd1 - xd2) * (xd1 - xd2)) + ((yd1 - yd2) * (yd1 - yd2)));
-	}
 
 	//does not overrider mob since it doesn't accept the same parameters
 	protected void move() {	//may need to also update dir. ATM it does, because it calls the move(xa,ya) which DOES update dir. in Mob.
@@ -52,9 +44,18 @@ public class Star extends Mob {
 		int py = (int) level.getPlayerAt(0).getY();
 		Vector2i start = new Vector2i((int) getX() >> 4, (int) getY() >> 4);
 		Vector2i destination = new Vector2i(px >> 4, py >> 4);
-		if (time % 3 == 0) path = level.findPath(start, destination);	//For now- shouldnt run every single update
+		if (time % 5 == 0) path = level.findPath(start, destination);	//For now- shouldnt run every single update
 		if (path != null) {
 			if (path.size() > 0) {
+				//TODO lol this is just to get my attention
+				//Real talk, this seems inefficient because once the mob has moved to size-1 node, it won't go any further on that calculated path- it will move again only after
+				//	it has recalculated the path. I guess that makes sense, in a way- the parent node is path - 1 or something. But frankly if that's the case then we don't need to 
+				//	recalculate the path each time, surely? we just need to look at the next node? How do we know when we don't need to find a new path?
+				//	If I really think about it, I believe this is true- we're only moving to the first node in the path before we just recalculate it, but I think part of A* also requires
+				//	knowing the full path. I might try implementing it to just get the next node, as opposed to calculating a whole path.
+				//		Hey, fun fact- we run into a severe framerate drop when our Star can't find a valid path. Either when Im in a block (with collision disabled) or otherwise have stuch
+				//		myself in a closed off region surrounded by solid tiles. I think this is because it ends up checking like... EVERY option, but idk.
+				//		It needs some resolution.
 				Vector2i vec = path.get(path.size() - 1).tile;	//A* search algorithm adds the nodes in reverse order, so the last one in the list is closest to us
 				if (		(int) x < vec.getX() << 4) xa+= speed;		//vector in tile precision
 				else if (	(int) x > vec.getX() << 4) xa-= speed;

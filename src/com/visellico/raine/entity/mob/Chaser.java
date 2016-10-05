@@ -29,6 +29,7 @@ public class Chaser extends Mob {
 		speed = .8;
 	}
 	
+	/*
 	private double calculateDistance(int x1, int y1, int x2, int y2) {
 		double xd1 = (double) x1;
 		double yd1 = (double) y1;
@@ -36,7 +37,7 @@ public class Chaser extends Mob {
 		double yd2 = (double) y2;
 		
 		return Math.sqrt(((xd1 - xd2) * (xd1 - xd2)) + ((yd1 - yd2) * (yd1 - yd2)));
-	}
+	}*/
 
 	protected void move() {	//may need to also update dir. ATM it does, because it calls the move(xa,ya) which DOES update dir. in Mob.
 		

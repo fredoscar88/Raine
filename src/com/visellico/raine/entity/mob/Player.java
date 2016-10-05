@@ -1,23 +1,41 @@
 package com.visellico.raine.entity.mob;
 
-import java.util.List;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import com.visellico.raine.Game;
-import com.visellico.raine.entity.Entity;
 import com.visellico.raine.entity.projectile.Projectile;
 import com.visellico.raine.entity.projectile.WizardProjectile;
 import com.visellico.raine.graphics.AnimatedSprite;
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.graphics.Sprite;
 import com.visellico.raine.graphics.SpriteSheet;
+import com.visellico.raine.graphics.ui.UIActionListener;
+import com.visellico.raine.graphics.ui.UIButton;
+import com.visellico.raine.graphics.ui.UIButtonListener;
+import com.visellico.raine.graphics.ui.UILabel;
+import com.visellico.raine.graphics.ui.UIManager;
+import com.visellico.raine.graphics.ui.UIPanel;
+import com.visellico.raine.graphics.ui.UIProgressBar;
 import com.visellico.raine.input.Keyboard;
 import com.visellico.raine.input.Mouse;
+import com.visellico.raine.util.ImageUtils;
+import com.visellico.raine.util.Vector2i;
 
 public class Player extends Mob {
 	
+	private String name;
+	private int mana = 80;
+	
 	private Keyboard input;
 //	private Sprite sprite;	//sprite of the player- switched around for when we animate. Funnily, we already have a sprite from mob. Let's comment this out for now..
-	private int animate = 0;
+//	private int animate = 0;
 	//private boolean walking = false;
 	private AnimatedSprite down = new AnimatedSprite(SpriteSheet.player_down, 32, 32, 4);
 	private AnimatedSprite up = new AnimatedSprite(SpriteSheet.player_up, 32, 32, 4);
@@ -30,28 +48,156 @@ public class Player extends Mob {
 	//speed should belong to all mobs (TODO)
 	private int fireRate = 0;
 	
+	private UIManager ui;
+	private UIProgressBar uiBarHealth;
+	private UIButton randomButton;
+	private UIButton exitButton;
+	
+	private BufferedImage biExitButton = null;
+	private BufferedImage biExitButtonHover = null;
+	private BufferedImage biHome, biHomeBright, biHomeDark;
+//	UIProgressBar barMana;
+	
 	//It may be that eventually we'll want sub-classes of player, but save that for another time, another game... (Important)
 	//default spawn point
-	public Player(Keyboard input) {	//will also use mouse in future
-		this.input = input;	//the keyboard :I
-		sprite = Sprite.player_back;
-		curSprite = down;
+	public Player(String name, Keyboard input) {	//will also use mouse in future
+//		this.input = input;	//the keyboard :I
+//		sprite = Sprite.player_back;
+//		curSprite = down;
+		this(name, 0, 0, input);	//note that this.x and this.y, what we find in Entity, are initialized @0 implicitly, hence why in the commented out code above we never set these things
 	}
 	
 	//in case players need to be instantiated at a specific coordinate
-	public Player(int x, int y, Keyboard input) {
-		this.x = x;
-		this.y = y;
+	public Player(String name, int xspawn, int yspawn, Keyboard input) {
+		this.name = name;
+		this.x = xspawn;
+		this.y = yspawn;
 		this.input = input;
+		ui = Game.getUIMananger();
 		sprite = Sprite.player_back;
 		curSprite = down;
 		fireRate = WizardProjectile.FIRERATE;
 		speed = 1;
-		setAnimatedFrameRate(10, down, up, left, right);
+		health = maxHealth;
+		setAnimatedFrameRate(FRAME_RATE, down, up, left, right);
 		
+		
+		
+		try {
+			biExitButton = ImageIO.read(new File("res/textures/button_exit.png"));
+			biExitButtonHover = ImageIO.read(new File("res/textures/button_exitHover.png"));
+			biHome = ImageIO.read(new File("res/textures/home.png"));
+			biHomeBright = ImageUtils.changeBrightness(biHome, 30);	//It may be that we don't want to maintain references to these guys after we've set them in ButtonListener,
+			biHomeDark = ImageUtils.changeBrightness(biHome, -30);	//	because while we could CHANGE them after the fact, there's no point, and now we have useless stuff on the heap
+																	
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}		
+		
+		//Player's action/side panel UI---------------------------------------------------------
+		UIPanel p = (UIPanel) new UIPanel(new Vector2i((300 - 80) * 3,0), new Vector2i(80*3, 168*3)).setColor(new Color(0x555555, false));
+		
+		UILabel labelName = (UILabel) new UILabel(new Vector2i(35, 200), this.name).setColor(0xBBBBBB);
+		labelName.setFont(new Font("Verdana", Font.PLAIN, 24));
+		labelName.dropShadow = true;
+
+		uiBarHealth = (UIProgressBar) new UIProgressBar(new Vector2i(35, 210), new Vector2i(80*3 - 20*3, 20), .5).setColor(0xFF7F7F);
+		
+		UILabel labelHP = new UILabel(new Vector2i(uiBarHealth.position).add(new Vector2i(2, 16)), "HP".concat(": " + health));
+		labelHP.setColor(0xFFFFFF);
+		labelHP.dropShadow = true;
+		labelHP.setFont(new Font("Verdana", Font.PLAIN, 18));
+		
+		randomButton = new UIButton(new Vector2i(35, 235), new Vector2i(120, 30), new UIActionListener() {
+			public void perform() {
+				System.out.println("Button Pressed! and released!");
+				//and we have access to Player variables!
+			}	//anonymous inner type! And we can replace this UIActionListener!
+		}, "Hi");
+		randomButton.setText("Hello");
+		randomButton.setActionListener(new UIActionListener() {
+			public void perform() {
+				health = health - 10 < 0 ? 0 : health - 10;
+				labelHP.setText("HP: " + health);	//this label should update every "tick" but it doesnt since the label is a local variable in this constructor
+//				health = maxHealth;	so this is something I want to do- a health regen when you're disengaged from battle
+//				System.exit(0); lol
+			}
+		});
+		randomButton.setButtonListener(new UIButtonListener() {
+			public void released(UIButton button) {	//default behaviour is button performs when released, changing that to when it is pressed
+//				button.setColor(0xAAAAFF);
+				button.setColor(0xCDCDCD);
+			}	//sniff it's so beautiful ;D	TODO
+			public void pressed(UIButton button) {
+				button.setColor(0xAAFFAA);
+				button.performAction();
+			}
+		});
+		//Problems with the method below: We would have a lot harder of a time changing it. FYI to do what the below method does,
+		//	UIButton needds must implement UIActionListener. Good lesson on inheritance tho
+		/*randomButton = new UIButton(new Vector2i(35, 235), new Vector2i(120, 30), "hi") {
+			public void perform() {
+				System.out.println("Boo");
+			}
+		};*/
+		
+		UIButton imageButton = new UIButton(new Vector2i(35, 270), biHome, new UIActionListener() {
+			public void perform() {
+				health = maxHealth;
+				labelHP.setText("HP: " + health);
+//				System.out.println("HEALTH: " + health);
+				x = 20*16;	//something I've just learned, it has a hard time when you use arguments from parameters that also are the same as super class values.
+				y = 59*16;
+			}
+		});
+		imageButton.setButtonListener(new UIButtonListener() {
+			public void entered(UIButton button) {
+				button.setImage(biHomeBright);
+			}
+			public void exited(UIButton button) {
+				button.setImage(biHome);
+			}
+			public void pressed(UIButton button) {
+				button.setImage(biHomeDark);
+			}
+			public void released(UIButton button) {
+				button.setImage(biHomeBright);
+				button.performAction();
+			}
+		});
+		
+		exitButton = new UIButton(new Vector2i(80*3 - 32, 168*3 - 32), biExitButton, new UIActionListener() {
+			public void perform() {
+				System.exit(0);
+			}
+		});
+		exitButton.setButtonListener(new UIButtonListener() {
+			public void entered(UIButton button) {
+				button.setImage(biExitButtonHover);	//we could have read the pixels from the buffered image and done a replace like we do in Game, but nah. Two separate images is easier.
+			}										//	if we look at arrays we have to be careful not to modify the pixels of the original image. ACTUALLY IMMA DO DIS
+			public void exited(UIButton button) {
+				button.setImage(biExitButton);
+			}
+		});
+		
+		p.add(labelName);
+		p.add(uiBarHealth);
+		p.add(labelHP);
+		p.add(randomButton);
+		p.add(imageButton);
+		p.add(exitButton);
+		
+		
+		ui.add(p);	//this doesnt have to happen after everything, but I like it this way, anyways.
+		
+		/*UIPanel death = new UIPanel(new Vector2i((300-300)*3, 0), new Vector2i((300-80)*3, (168)*3)).setColor(new Color(0xD0303030, true));
+		UILabel d0 = (UILabel) new UILabel(new Vector2i(3*300/2 - 45*3, 3*168/2 - 5*3), "Died!").setColor(0xFF0000);
+		death.add(d0);
+		ui.add(death);*/
 //		ignoreCollision = true;
 	}
 	
+//	int time = 0;
 	public void update() {
 		//test.update();
 		/*if (walking) {
@@ -61,9 +207,15 @@ public class Player extends Mob {
 			curSprite.setFrame(0);	//previously, if we weren't walking, we would change to the idle-player sprite in the render method but now it makes sense to put in the update
 									//	since this is where we update what we're trying to show
 		}*/
-		
+//		ignoreCollision = true;	//this is here so I can edit it runtime. TODO remove
 		double xa = 0, ya = 0;
 		//animate = (animate + 1) % 40;	//cycles between 0 and 39
+//		time++;
+//		if (time % 10 == 0) {
+//			if (input.manUp && mana < 100) mana++; 
+//			if (input.manDown && mana > 0) mana--;
+//			health++;
+//		}
 		
 		if (input.up) ya-=speed;
 		if (input.down) ya+=speed;
@@ -94,6 +246,7 @@ public class Player extends Mob {
 			updateShooting();
 		}
 		
+		uiBarHealth.setProgress((double) health / (double) maxHealth);
 	}
 	
 	//Why is this method in player. (TODO). I think it used to mean, basically, that all mobs could manage their own projectiles, but it's a little silly now, since mobs don't keep track
@@ -107,15 +260,19 @@ public class Player extends Mob {
 
 	private void updateShooting() {
 		
-		if (Mouse.getButton() == 1 && fireRate == 0) {
+		if ((Mouse.getButton() == 1 && fireRate == 0) ) {//&& Mouse.getX() < Game.width * Game.scale) {
 			//System.out.println(Mouse.getX() + " " + Game.getWindowWidth() / 2 + "\n" + Mouse.getY() + " " + Game.getWindowHeight() / 2);
 			double dx = Mouse.getX() - (Game.getWindowWidth()/2);	//should be pulling this from screen, but game width/height is static
 			double dy = Mouse.getY() - (Game.getWindowHeight()/2);
 			double theta = Math.atan2(dy, dx);	//Basically, if dx= 0 tan is approaching infinite. But we all know that it should be 0 so this makes it 0.
 			shoot(x, y, theta);	//Note we still use the players x y as the place to fire from!
 				//all mobs can shoot, players shoot differently which is why we're calling the super class method but doing math here
-			fireRate = WizardProjectile.FIRERATE;
+			fireRate = WizardProjectile.FIRERATE;	//resets firerate. There's multiple ways to slow down how a mob fires, but this works, set it to an arbitrary limit, decrement each update
 		}
+	}
+	
+	public String getName() {
+		return this.name;
 	}
 
 	/**
@@ -124,6 +281,10 @@ public class Player extends Mob {
 	 * @param screen Screen to draw the character on
 	 */
 	public void render(Screen screen) {
+		
+//		Debug.drawRect(screen, 50, 50, 16, 16, false);
+		
+		
 		//it's like a battle field in here TODO remove all these comments
 		int flip = 0;
 		

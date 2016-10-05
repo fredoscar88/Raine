@@ -45,7 +45,8 @@ public class Dummy extends Mob {
 		
 		
 		if (xa != 0 || ya !=0) {
-			move(xa, ya);
+			//move(xa, ya);	//Please remember Dir is determined in Mob.move, not here, nore in Dummy.move. This is different than TheCherno. I might change it to have Dir be done here, but imo
+							//	it should just be in mob as all mobs have dir... and we can focus on stuff here like animated sprites which not all mobs might have.
 			walking = true;
 			curSprite.update();
 			

@@ -1,7 +1,6 @@
 package com.visellico.raine.entity.particle;
 
 import com.visellico.raine.entity.Entity;
-import com.visellico.raine.entity.spawner.ParticleSpawner;
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.graphics.Sprite;
 

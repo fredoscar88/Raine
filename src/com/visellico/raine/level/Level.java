@@ -6,16 +6,18 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.visellico.raine.entity.Entity;
+import com.visellico.raine.entity.mob.Mob;
 import com.visellico.raine.entity.mob.Player;
 import com.visellico.raine.entity.particle.Particle;
 import com.visellico.raine.entity.projectile.Projectile;
 import com.visellico.raine.graphics.Screen;
+import com.visellico.raine.graphics.layers.Layer;
 import com.visellico.raine.level.tile.Tile;
 import com.visellico.raine.util.Vector2i;
 
 //there will be two "types" here random gen and data loaded levels
 //vaguely abstract. might make abstract.
-public class Level {
+public class Level extends Layer {	//So, MASSIVE ENGINE OVERHAUL well, chanes, but, Hey. TODO GIT UNDERSTOOD
 	//Everything that ALL levels inherit goes here- a template
 	//See SpawnLevel for an idea on how individual levels might be treated
 
@@ -79,14 +81,14 @@ public class Level {
 	
 	//happens sixty updates a second
 	public void update() {
+		for (int i = 0; i < particles.size(); i++) {
+			particles.get(i).update();
+		}
 		for (int i = 0; i < entities.size(); i++) {
 			entities.get(i).update();
 		}
 		for (int i = 0; i < projectiles.size(); i++) {
 			projectiles.get(i).update();
-		}
-		for (int i = 0; i < particles.size(); i++) {
-			particles.get(i).update();
 		}
 		for (int i = 0; i < players.size(); i++) {
 			players.get(i).update();
@@ -105,7 +107,7 @@ public class Level {
 			if (particles.get(i).isRemoved()) particles.remove(i);
 		}
 		for (int i = 0; i < players.size(); i++) {	//do I need this?
-			if (players.get(i).isRemoved()) particles.remove(i);
+			if (players.get(i).isRemoved()) players.remove(i);
 		}
 	}
 
@@ -170,18 +172,19 @@ public class Level {
 			}
 			
 		}
+		for (int i = 0; i < particles.size(); i++) {
+			particles.get(i).render(screen);
+		}
 		for (int i = 0; i < entities.size(); i++) {
 			entities.get(i).render(screen);
 		}
 		for (int i = 0; i < projectiles.size(); i++) {
 			projectiles.get(i).render(screen);
 		}
-		for (int i = 0; i < particles.size(); i++) {
-			particles.get(i).render(screen);
-		}
 		for (int i = 0; i < players.size(); i++) {
 			players.get(i).render(screen);
 		}
+		
 	}
 	
 	//initialize an A* search. TODO TODO TODO git understood
@@ -205,6 +208,7 @@ public class Level {
 				while (current.parent != null) {	//starting tile has null. We are going from finish to start.
 					path.add(current);
 					current = current.parent;	//goes back one in the line
+					//This whole "adding in reverse" reminds me of recursion
 				}
 				openList.clear();
 				closedList.clear();
@@ -248,7 +252,8 @@ public class Level {
 		
 	}
 	
-	//This should REALLY go in the Vector class.
+	//This should REALLY go in the Vector class. In fact it IS going in the vector class as of ep 104 >:VVVVVVVVVVVVVV UGH good programming, TheCherno lol. Of course he
+	//	sometimes takes a few month's break in between episodes... I can see how it'd be easy to forget
 	public double getDistance(Vector2i v1, Vector2i v2) {
 		
 		//Also- vectors traditionally don't use getters/setters, just have public member variables.
@@ -256,7 +261,7 @@ public class Level {
 		double dy = v1.getY() - v2.getY();
 		double distance = Math.sqrt((dx * dx) + (dy * dy));
 //		return distance == 1 ? 1 : 0.95;	//this is silly, but it lets him prefer diagonals (which normally are 1.41)
-		return Math.sqrt((dx * dx) + (dy * dy));
+		return distance;
 	}
 	
 	public void add(Entity e) {
@@ -287,6 +292,28 @@ public class Level {
 		double ey = e.getY();
 		for (int i = 0; i < entities.size(); i++) {
 			Entity entity = entities.get(i);
+			if (entity.equals(e)) continue;
+			double x = entity.getX();
+			double y = entity.getY();
+			
+			double dx = x - ex;
+			double dy = y - ey;
+			Double distance = Math.sqrt((dx * dx) + (dy * dy));	//distance
+			if (distance <= radius) {
+				result.add(entity);
+			}
+		}
+		
+		return result;
+	}
+	
+	public List<Entity> getMobs(Entity e, int radius) {	//get all entities in the specified radius
+		List<Entity> result = new ArrayList<Entity>();
+		double ex = e.getX();
+		double ey = e.getY();
+		for (int i = 0; i < entities.size(); i++) {
+			Entity entity = entities.get(i);
+			if (entity.equals(e) || !(e instanceof Mob)) continue;
 			double x = entity.getX();
 			double y = entity.getY();
 			
@@ -306,7 +333,7 @@ public class Level {
 		double ex = e.getX();
 		double ey = e.getY();
 		for (int i = 0; i < players.size(); i++) {
-			Entity entity = players.get(i);
+			Entity entity = players.get(i);	//lol this can be Player player = players.get(i)
 			if (players.get(i) instanceof Player) {	
 				double x = entity.getX();
 				double y = entity.getY();

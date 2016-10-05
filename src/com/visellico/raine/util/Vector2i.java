@@ -4,7 +4,7 @@ package com.visellico.raine.util;
 public class Vector2i {
 	
 	//All the seemingly useless stuff in here is meant to be good practice for "util" classes, so it's chill
-	private int x, y;
+	public int x, y;
 	
 	public Vector2i() {
 		set(0,0);
@@ -34,12 +34,24 @@ public class Vector2i {
 		this.y += vector.y;
 		return this;
 	}
+	
+	//add a vector to this vector
+	public Vector2i add(int value) {
+		this.x += value;
+		this.y += value;
+		return this;
+	}
+	
 	//subtract a vector from this vector
 	public Vector2i subtract(Vector2i vector) {
 		this.x -= vector.x;
 		this.y -= vector.y;
 		return this;
 	}
+	
+	/*public Vector2i clone() {
+		return new Vector2i(this.x, this.y);
+	}*/
 	
 	public void set(int x, int y) {
 		this.x = x;
@@ -54,6 +66,14 @@ public class Vector2i {
 	public Vector2i setY(int y) {
 		this.y = y;
 		return this;
+	}
+	
+	//Frankly I'd prefer if this weren't static, and one of the constituent vectors were <this>, i.e implied
+	//	this might git put in a super class too, since ALL vectors can calculate distance
+	public static double getDistance(Vector2i v0, Vector2i v1) {
+		double dx = v0.getX() - v1.getX();
+		double dy = v0.getY() - v1.getY();
+		return Math.sqrt((dx * dx) + (dy * dy));
 	}
 	
 	public boolean equals(Object object) {
