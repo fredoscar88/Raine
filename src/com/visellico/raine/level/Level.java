@@ -10,6 +10,7 @@ import com.visellico.raine.entity.mob.Mob;
 import com.visellico.raine.entity.mob.Player;
 import com.visellico.raine.entity.particle.Particle;
 import com.visellico.raine.entity.projectile.Projectile;
+import com.visellico.raine.events.Event;
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.graphics.layers.Layer;
 import com.visellico.raine.level.tile.Tile;
@@ -30,6 +31,8 @@ public class Level extends Layer {	//So, MASSIVE ENGINE OVERHAUL well, chanes, b
 	protected int width, height;	//will be used with random levels- custom made ones will already have a width/height
 	protected int[] tilesInt;
 	protected int[] tiles;	//all the level tiles. acknowledging that only one level can be loaded at a time. Stores the colors.
+	
+	private int xScroll, yScroll;
 	
 	private List<Entity> entities = new ArrayList<Entity>();	//Side note: No need to instantiate an arraylist like ArrayList<Entity> since it's implied when we do List<entity>
 	private List<Projectile> projectiles = new ArrayList<Projectile>();
@@ -96,6 +99,10 @@ public class Level extends Layer {	//So, MASSIVE ENGINE OVERHAUL well, chanes, b
 		remove();	//removes dead entities that are flagged for removal		
 	}
 	
+	public void onEvent(Event event) {
+		getClientPlayer().onEvent(event);
+	}
+	
 	private void remove() {
 		for (int i = 0; i < entities.size(); i++) {	//do I need this?
 			if (entities.get(i).isRemoved()) entities.remove(i);
@@ -143,11 +150,16 @@ public class Level extends Layer {	//So, MASSIVE ENGINE OVERHAUL well, chanes, b
 		
 	}
 	
+	public void setScroll(int xScroll, int yScroll) {
+		this.xScroll = xScroll;
+		this.yScroll = yScroll;
+	}
+	
 	//xScrll and yScroll are the position of the player or somesuch, how much the screen is "scrolled". xScroll and yScroll are based on, I guess, the upper leftmost corner-
 	//	or rather if that corner is 0,0 then x/y Scroll are the relative movements of ALL pixels but they also are the coords of the upper left pixel. hence why it works below when we do the
 	//	bit-shift jazz. Kinda clever actually; the amount that EVERY pixel is offset by is also conveniently the coordinates of the upper leftmost pixel!
 	//He names 'em xScroll, yScroll. Also all levels render the same, hence why we write this is in the parent class
-	public void render(int xScroll, int yScroll, Screen screen) {
+	public void render(Screen screen) {
 		
 		//screen that we're drawing onto
 		screen.setOffset(xScroll, yScroll);	//xScrp;; and yScroll are the position of the player, and the amount the map needs to "scroll" when the player moves- our offset

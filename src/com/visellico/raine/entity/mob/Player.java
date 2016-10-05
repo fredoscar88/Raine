@@ -2,6 +2,7 @@ package com.visellico.raine.entity.mob;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.File;
@@ -12,6 +13,11 @@ import javax.imageio.ImageIO;
 import com.visellico.raine.Game;
 import com.visellico.raine.entity.projectile.Projectile;
 import com.visellico.raine.entity.projectile.WizardProjectile;
+import com.visellico.raine.events.Event;
+import com.visellico.raine.events.EventDispatcher;
+import com.visellico.raine.events.EventListener;
+import com.visellico.raine.events.types.MousePressedEvent;
+import com.visellico.raine.events.types.MouseReleasedEvent;
 import com.visellico.raine.graphics.AnimatedSprite;
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.graphics.Sprite;
@@ -28,7 +34,7 @@ import com.visellico.raine.input.Mouse;
 import com.visellico.raine.util.ImageUtils;
 import com.visellico.raine.util.Vector2i;
 
-public class Player extends Mob {
+public class Player extends Mob implements EventListener {
 	
 	private String name;
 	private int mana = 80;
@@ -47,6 +53,7 @@ public class Player extends Mob {
 	
 	//speed should belong to all mobs (TODO)
 	private int fireRate = 0;
+	private boolean shooting = false;
 	
 	private UIManager ui;
 	private UIProgressBar uiBarHealth;
@@ -242,9 +249,10 @@ public class Player extends Mob {
 		clear();	//Gets rid of projectiles that have over travelled, travelled beyond their range.
 		if (fireRate > 0) {
 			fireRate--;
-		} else {
+		} /*else {
 			updateShooting();
-		}
+		}*/
+		updateShooting();
 		
 		uiBarHealth.setProgress((double) health / (double) maxHealth);
 	}
@@ -258,7 +266,9 @@ public class Player extends Mob {
 		
 	}
 
-	private void updateShooting() {
+	//LOL WELCOME BACK UPDATE SHOOTING
+	//RIP updateShooting, the new Event System won't miss you but I will
+	/*private void updateShooting() {
 		
 		if ((Mouse.getButton() == 1 && fireRate == 0) ) {//&& Mouse.getX() < Game.width * Game.scale) {
 			//System.out.println(Mouse.getX() + " " + Game.getWindowWidth() / 2 + "\n" + Mouse.getY() + " " + Game.getWindowHeight() / 2);
@@ -269,6 +279,44 @@ public class Player extends Mob {
 				//all mobs can shoot, players shoot differently which is why we're calling the super class method but doing math here
 			fireRate = WizardProjectile.FIRERATE;	//resets firerate. There's multiple ways to slow down how a mob fires, but this works, set it to an arbitrary limit, decrement each update
 		}
+	}*/
+	private void updateShooting() {
+		if (!shooting || fireRate > 0) 
+			return;
+	
+		double dx = Mouse.getX() - (Game.getWindowWidth()/2);
+		double dy = Mouse.getY() - (Game.getWindowHeight()/2);
+		double theta = Math.atan2(dy, dx);
+		shoot(x, y, theta);	//Note we still use the players x y as the place to fire from!
+			//all mobs can shoot, players shoot differently which is why we're calling the super class method but doing math here
+		fireRate = WizardProjectile.FIRERATE;	//resets firerate. There's multiple ways to slow down how a mob fires, but this works, set it to an arbitrary limit, decrement each update
+		
+	
+	}
+	
+	public boolean onMousePressed(MousePressedEvent e) {
+		if (e.getButton() == MouseEvent.BUTTON1) {//&& Mouse.getX() < Game.width * Game.scale) {
+			shooting = true;
+			return true;	//Blocks the event because we handled it now
+		}
+		return false;	//whether or not we block the rest of the stuff receiving this event. False says we haven't handled it and other things requesting it can use it.
+	}
+	
+	public boolean onMouseReleased(MouseReleasedEvent e) {
+		if (e.getButton() == MouseEvent.NOBUTTON) {	//uhhh I dont think this ever runs if this is MouseEvent.BUTTON1. Yeah this... it should only go when we release Button1 but that doesnt work TODO
+//			System.out.println("Mouse released");
+			shooting = false;
+			return true;
+		}
+		return false;//whether or not we block the rest of the stuff receiving this event
+	}
+	
+	//Player actualy does something with events. But really TODO TODO TODO git understood lambdas. Shorter ways of writing an inner class, like when we put body braces in a parameter
+	public void onEvent(Event event) {
+//		System.out.println(event);	//.....yay
+		EventDispatcher dispatcher = new EventDispatcher(event);
+		dispatcher.dispatch(Event.Type.MOUSE_PRESSED, (Event e) -> (onMousePressed((MousePressedEvent) e)));
+		dispatcher.dispatch(Event.Type.MOUSE_RELEASED, (Event e) -> (onMouseReleased((MouseReleasedEvent) e)));
 	}
 	
 	public String getName() {

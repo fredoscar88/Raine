@@ -7,19 +7,24 @@ import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFrame;
 
 import com.visellico.raine.entity.mob.Player;
+import com.visellico.raine.events.Event;
+import com.visellico.raine.events.EventListener;
 //wowzer
 import com.visellico.raine.graphics.Screen;
+import com.visellico.raine.graphics.layers.Layer;
 import com.visellico.raine.graphics.ui.UIManager;
 import com.visellico.raine.input.Keyboard;
 import com.visellico.raine.input.Mouse;
 import com.visellico.raine.level.Level;
 import com.visellico.raine.level.TileCoordinate;
 
-public class Game extends Canvas implements Runnable {
+public class Game extends Canvas implements Runnable, EventListener {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -51,6 +56,8 @@ public class Game extends Canvas implements Runnable {
 	private int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();/*raster- rectangular array of pixels*/
 										//image -> raster (array of pixels) -> data buffer, which handles the raster
 	
+	private List<Layer> layerStack = new ArrayList<Layer>();
+	
 	public Game() {
 		
 		Dimension size = new Dimension(width*scale + 80*scale, height*scale);	//note that scaling by three makes our pixels effectively 3^2 larger. just like if it was dragged out by a click
@@ -62,6 +69,7 @@ public class Game extends Canvas implements Runnable {
 		key = new Keyboard();
 		level = Level.spawn;	//new SpawnLevel("/levels/spawn.png");	//starts @spawn
 //		level = new RandomLevel(64,64);
+		addLayer(level);	//hooray
 		uiManager = new UIManager();	//creating this BEFORE the player since player references this in it's constructor. Im fairly certain we can create it after if we wanted to, tho
 		//player = new Player(key);
 		TileCoordinate playerSpawn = new TileCoordinate(20, 59);
@@ -72,7 +80,7 @@ public class Game extends Canvas implements Runnable {
 		
 		//Must do this after key is initialized
 		addKeyListener(key);	//adds this component to the canvas
-		Mouse mouse = new Mouse();
+		Mouse mouse = new Mouse(this);
 		addMouseListener(mouse);
 		addMouseMotionListener(mouse);
 		
@@ -82,6 +90,10 @@ public class Game extends Canvas implements Runnable {
 	
 	public static UIManager getUIMananger() {
 		return uiManager;
+	}
+	
+	public void addLayer(Layer layer) {
+		layerStack.add(layer);
 	}
 	
 	//synchronized - to avoid memory conflicts, or overlapping. dont want to screw up.
@@ -147,12 +159,27 @@ public class Game extends Canvas implements Runnable {
 		stop();
 	}
 	
+	public void onEvent(Event event) {
+		//events go down the layer stack in reverse order
+		for (int i = layerStack.size() - 1; i >= 0; i--) {
+			layerStack.get(i).onEvent(event);
+		}
+	}
+	
 	public void update() {
 		
 		key.update();
 //		player.update();	//screw it, player will be updated and rendered independently, at least THIS player will be.
-		level.update();
+		//level.update();
+		//Update through the layerstack instead. Update layers here
+		for (int i = 0; i < layerStack.size(); i++) {
+			layerStack.get(i).update();
+			//We render in first to last order, unlike how we process events
+		}
 		uiManager.update();
+		
+		
+		
 	}
 //	int colorChange = 0;
 	public void render() {
@@ -167,7 +194,14 @@ public class Game extends Canvas implements Runnable {
 		screen.clear();
 		double xScroll = player.getX() - (screen.width / 2);	//Offsets level rendering to center the player
 		double yScroll = player.getY() - (screen.height / 2);	//this is because the player's position would other wise be at the top left of the screen.
-		level.render((int) xScroll, (int) yScroll, screen);	//So render at location of player, minus half the screen in either direction
+		level.setScroll((int) xScroll, (int) yScroll);
+		//render layers here
+		for (int i = 0; i < layerStack.size(); i++) {
+			layerStack.get(i).render(screen);
+			//We render in first to last order, unlike how we process events
+		}
+		
+		// RIP level.render TODO so, we remove this b/c of the event system. level.render(screen);	//So render at location of player, minus half the screen in either direction
 //		player.render(screen);	//Player is rendered after other mobs because the player should render above everything else. Which means it's being rendered twice- 
 								//	I dont have a fix for this now since it should still render players from level.render (multiplayer), but I want player to belong to level 
 								//	and not be updated on it's own.
