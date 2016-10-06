@@ -7,7 +7,14 @@ public class ParticleSpawner extends Spawner {
 
 	private int life;
 	
-	
+	/**
+	 * so
+	 * @param x test
+	 * @param y
+	 * @param amount
+	 * @param life
+	 * @param level
+	 */
 	public ParticleSpawner(int x, int y, int amount, int life, Level level) {
 		super(x, y, Spawner.Type.PARTICLE, amount, level);
 		this.life = life;

@@ -4,8 +4,13 @@ import com.visellico.raine.entity.Entity;
 import com.visellico.raine.entity.projectile.Projectile;
 import com.visellico.raine.entity.projectile.WizardProjectile;
 import com.visellico.raine.entity.spawner.ParticleSpawner;
+import com.visellico.raine.entity.timer.Timer;
+import com.visellico.raine.entity.timer.TimerEvent;
 import com.visellico.raine.graphics.AnimatedSprite;
 import com.visellico.raine.graphics.Screen;
+import com.visellico.raine.graphics.ui.UIActionListener;
+import com.visellico.raine.graphics.ui.UIButton;
+import com.visellico.raine.util.Vector2i;
 
 public abstract class Mob extends Entity {
 	
@@ -111,8 +116,8 @@ public abstract class Mob extends Entity {
 	 * Teleports a mob to the given location
 	 * @param xDest X coordinate of location
 	 * @param yDest	Y coordinate of location
-	 * @param effectLeave Effect to play at Mob's position before teleporting
-	 * @param effectArrive Effect to play when mob arrives
+	 * @param effectLeave Effect to play at Mob's position before teleporting. Can be null
+	 * @param effectArrive Effect to play when mob arrives. Can be null
 	 * @param delay Delay, measured in seconds
 	 */
 	public void Teleport(int xDest, int yDest, ParticleSpawner effectLeave, ParticleSpawner effectArrive, int delay) {
@@ -122,6 +127,43 @@ public abstract class Mob extends Entity {
 		//	in such an event dispatching class that is run through every update cycle which clears itself out , destorying object references.
 		//this also lets us do stuff that needs to be done for X seconds or whatever like an AOE heal that is called every update for 60X updates
 		//	I would call them TimedEvents, create a whole class for it
+		
+		Timer t = new Timer(delay);
+		//technically we only have to add it to the Timer's list of entities if we are updating the entities based on the timer.
+		if (!(effectLeave == null)) t.addEntity(effectLeave);//(new ParticleSpawner((int) x, (int) y, 50, delay, level))); 
+		//SUSPEND MOB MOVEMENT
+		t.setTimerEvent(new TimerEvent() {
+			public void action(int time) {
+				if (time >= delay - 1) {
+					x = xDest;
+					y = yDest;
+					if (!(effectArrive == null)) level.add(effectArrive);
+				}
+			}			
+		});
+		
+	}
+	
+	public void Teleport(int xDest, int yDest, int delay) {
+		//this is going to be complicated, because I would like a delay that causes immobilization. But this needs to be dispatched as an event of sorts, frankly!
+		//	Because how am I going to keep track of when someone should teleport? So with the event dispatching stuff, I should be able to set one that carries out
+		//	teleportation. But when it does that it also needs to destroy the lambda or interface or whatever we created when we called the event, I guess i can add it to a list 
+		//	in such an event dispatching class that is run through every update cycle which clears itself out , destorying object references.
+		//this also lets us do stuff that needs to be done for X seconds or whatever like an AOE heal that is called every update for 60X updates
+		//	I would call them TimedEvents, create a whole class for it
+		
+		Timer t = new Timer(delay);
+		//SUSPEND MOB MOVEMENT
+		t.setTimerEvent(new TimerEvent() {
+			public void action(int time) {
+				if (time >= delay - 1) {
+					x = xDest;
+					y = yDest;
+				}
+			}			
+		});
+		level.add(t);
+		
 	}
 	
 	//weird absolute thing. consolidates the whole numberline down to -1 and 1.

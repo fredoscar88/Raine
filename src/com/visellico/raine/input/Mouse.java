@@ -71,7 +71,7 @@ public class Mouse implements MouseListener, MouseMotionListener {
 	public void mouseReleased(MouseEvent e) {
 		mouseB = MouseEvent.NOBUTTON;
 		
-		MouseReleasedEvent event = new MouseReleasedEvent(mouseB, e.getX(), e.getY());
+		MouseReleasedEvent event = new MouseReleasedEvent(e.getButton(), e.getX(), e.getY());
 		eventListener.onEvent(event);
 	}
 

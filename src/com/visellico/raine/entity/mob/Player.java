@@ -1,5 +1,6 @@
 package com.visellico.raine.entity.mob;
 
+import java.awt.Button;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.MouseEvent;
@@ -96,10 +97,10 @@ public class Player extends Mob implements EventListener {
 			biHome = ImageIO.read(new File("res/textures/home.png"));
 			biHomeBright = ImageUtils.changeBrightness(biHome, 30);	//It may be that we don't want to maintain references to these guys after we've set them in ButtonListener,
 			biHomeDark = ImageUtils.changeBrightness(biHome, -30);	//	because while we could CHANGE them after the fact, there's no point, and now we have useless stuff on the heap
-																	
+			
 		} catch (IOException e1) {
 			e1.printStackTrace();
-		}		
+		}
 		
 		//Player's action/side panel UI---------------------------------------------------------
 		UIPanel p = (UIPanel) new UIPanel(new Vector2i((300 - 80) * 3,0), new Vector2i(80*3, 168*3)).setColor(new Color(0x555555, false));
@@ -153,8 +154,9 @@ public class Player extends Mob implements EventListener {
 				health = maxHealth;
 				labelHP.setText("HP: " + health);
 //				System.out.println("HEALTH: " + health);
-				x = 20*16;	//something I've just learned, it has a hard time when you use arguments from parameters that also are the same as super class values.
-				y = 59*16;
+				Teleport(20*16,59*16,1);
+//				x = 20*16;	//something I've just learned, it has a hard time when you use arguments from parameters that also are the same as super class values.
+//				y = 59*16;
 			}
 		});
 		imageButton.setButtonListener(new UIButtonListener() {
@@ -186,6 +188,14 @@ public class Player extends Mob implements EventListener {
 				button.setImage(biExitButton);
 			}
 		});
+		
+		p.add(new UIButton(new Vector2i(35, 330), new Vector2i(120, 30), new UIActionListener() {
+			
+			@Override
+			public void perform() {
+				Teleport((int)(x + 16*5), (int)(y), 60);
+			}
+		}, "TP"));
 		
 		p.add(labelName);
 		p.add(uiBarHealth);
@@ -283,7 +293,9 @@ public class Player extends Mob implements EventListener {
 	private void updateShooting() {
 		if (!shooting || fireRate > 0) 
 			return;
-	
+		//well it's broken anyway. The layerstack is being handled all wrong I think... (TODO) the layers for the UI are not being used
+		//but I might just have to actually add them to the Game.layerstack
+		if (Mouse.getX() > 660) return;
 		double dx = Mouse.getX() - (Game.getWindowWidth()/2);
 		double dy = Mouse.getY() - (Game.getWindowHeight()/2);
 		double theta = Math.atan2(dy, dx);
@@ -302,8 +314,9 @@ public class Player extends Mob implements EventListener {
 		return false;	//whether or not we block the rest of the stuff receiving this event. False says we haven't handled it and other things requesting it can use it.
 	}
 	
-	public boolean onMouseReleased(MouseReleasedEvent e) {
-		if (e.getButton() == MouseEvent.NOBUTTON) {	//uhhh I dont think this ever runs if this is MouseEvent.BUTTON1. Yeah this... it should only go when we release Button1 but that doesnt work TODO
+	public boolean onMouseReleased(MouseReleasedEvent e) {	//YEAH THIS SHOULD WORK WITH MOUSEEVENT.BUTTON1
+		if (e.getButton() == MouseEvent.BUTTON1) {
+		//if (e.getButton() == MouseEvent.BUTTON1) {	//uhhh I dont think this ever runs if this is MouseEvent.BUTTON1. Yeah this... it should only go when we release Button1 but that doesnt work TODO
 //			System.out.println("Mouse released");
 			shooting = false;
 			return true;
@@ -315,6 +328,8 @@ public class Player extends Mob implements EventListener {
 	public void onEvent(Event event) {
 //		System.out.println(event);	//.....yay
 		EventDispatcher dispatcher = new EventDispatcher(event);
+//		System.out.println(event.getType() + " hey you, the mouse released thingy, always gives 0 for the mouses button. Should be BUTTON1\nelse shooting" 
+//											+ "never turns off. I hope this is noticeable enough");
 		dispatcher.dispatch(Event.Type.MOUSE_PRESSED, (Event e) -> (onMousePressed((MousePressedEvent) e)));
 		dispatcher.dispatch(Event.Type.MOUSE_RELEASED, (Event e) -> (onMouseReleased((MouseReleasedEvent) e)));
 	}

@@ -109,8 +109,10 @@ public class UIButton extends UIComponent {
 
 	
 	public void update() {
+		
 		Rectangle rect = new Rectangle(getAbsolutePosition().x, getAbsolutePosition().y, size.x, size.y);
-		boolean leftMouseButtonDown = Mouse.getButton() == MouseEvent.BUTTON1;
+		boolean leftMouseButtonDown = (Mouse.getButton() == MouseEvent.BUTTON1);
+		
 		
 		if (rect.contains(new Point(Mouse.getX(), Mouse.getY()))) {
 			if (!inside) {
@@ -128,6 +130,7 @@ public class UIButton extends UIComponent {
 				buttonListener.pressed(this);
 				pressed = true;
 			} else if (Mouse.getButton() == MouseEvent.NOBUTTON) {	//this will trigger when ANY button is let up. This is pretty bad, we should be using release events. (TODO)
+				
 				if (pressed) {
 					buttonListener.released(this);
 					pressed = false;
