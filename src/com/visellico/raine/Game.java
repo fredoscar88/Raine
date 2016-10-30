@@ -24,6 +24,9 @@ import com.visellico.raine.input.Mouse;
 import com.visellico.raine.level.Level;
 import com.visellico.raine.level.TileCoordinate;
 import com.visellico.raine.net.player.NetPlayer;
+import com.visellico.rainecloud.serialization.RCDatabase;
+import com.visellico.rainecloud.serialization.RCField;
+import com.visellico.rainecloud.serialization.RCObject;
 
 public class Game extends Canvas implements Runnable, EventListener {
 
@@ -31,7 +34,7 @@ public class Game extends Canvas implements Runnable, EventListener {
 	
 	//width of our game viewing area.... (TODO) this really probably should just be a representation of thw window width, not our main viewing port.
 	//Why? Because it makes more sense that way. we are accommodating for it when we set the Dimension.
-	public static int width = 300 - 80;	//resolution
+	public static int width = 300 - 80;	//DEFAULT resolution
 	public static int height = 168;//width / 16 * 9; //aspect ratio 16:9 ||| 168
 	public static int scale = 3;	//How much the game will be scaled- multiply width/height
 		//however we are only rendering for the 300 16:9, it's just scaled up
@@ -54,17 +57,16 @@ public class Game extends Canvas implements Runnable, EventListener {
 	
 	//image to draw things, I guess this goes on the graphics, which goes on the buffer strategy which goes on the canvas
 	//here we could use a widthGame
-	private BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB); //not scaling w/h, no alpha
-	private int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();/*raster- rectangular array of pixels*/
+	private BufferedImage image; //not scaling w/h, no alpha
+	private int[] pixels;/*raster- rectangular array of pixels*/
 										//image -> raster (array of pixels) -> data buffer, which handles the raster
 	
 	private List<Layer> layerStack = new ArrayList<Layer>();
 	
+	//TODO create a reload event or something that will reload all asset files, or maybe specific ones, that contain data on stuff like monster damage, etc., which can be edited runtime without our magic hotreplace
 	public Game() {
 		
-		Dimension size = new Dimension(width*scale + 80*scale, height*scale);	//note that scaling by three makes our pixels effectively 3^2 larger. just like if it was dragged out by a click
-		setPreferredSize(size);	//comes from Canvas; java.awt.component, canvas extends component
-		
+		setSize();
 		//widthGame (sense graphics g doesnt use the screen renderer
 		screen = new Screen(width, height);	//not scaled either, I guess
 		frame = new JFrame();
@@ -88,7 +90,38 @@ public class Game extends Canvas implements Runnable, EventListener {
 		addMouseListener(mouse);
 		addMouseMotionListener(mouse);
 		
+		save();
 		
+	}
+	
+	private void setSize() {
+		RCDatabase db = RCDatabase.deserializeFromFile("res/data/screen.bin");
+		if (db != null) {
+			RCObject obj = db.findObject("Resolution");
+			width	= obj.findField("width").getInt();
+			height	= obj.findField("height").getInt();
+			scale	= obj.findField("scale").getInt();
+		}
+		
+		Dimension size = new Dimension(width*scale + 80*scale, height*scale);	//note that scaling by three makes our pixels effectively 3^2 larger. just like if it was dragged out by a click
+		setPreferredSize(size);	//comes from Canvas; java.awt.component, canvas extends component
+		image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+	}
+	
+	private void save() {
+		RCDatabase db = new RCDatabase("Screen");
+		RCObject obj = new RCObject("Resolution");
+		obj.addField(RCField.Int("width", width));
+		obj.addField(RCField.Int("height", height));
+		obj.addField(RCField.Int("scale", scale));
+		
+		db.addObject(obj);
+		
+		db.serializeToFile("res/data/screen.bin");
+	}
+	
+	private void load() {
 		
 	}
 	
