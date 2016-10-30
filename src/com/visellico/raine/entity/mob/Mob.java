@@ -8,9 +8,6 @@ import com.visellico.raine.entity.timer.Timer;
 import com.visellico.raine.entity.timer.TimerEvent;
 import com.visellico.raine.graphics.AnimatedSprite;
 import com.visellico.raine.graphics.Screen;
-import com.visellico.raine.graphics.ui.UIActionListener;
-import com.visellico.raine.graphics.ui.UIButton;
-import com.visellico.raine.util.Vector2i;
 
 public abstract class Mob extends Entity {
 	

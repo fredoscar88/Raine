@@ -44,9 +44,9 @@ public class Chaser extends Mob {
 		xa = 0;
 		ya = 0;
 		
-		List<Player> players = level.getPlayers(this, 3*16);
+		List<Mob> players = level.getPlayers(this, 3*16);
 		if (players.size() > 0) {
-			Player player = players.get(0);	//This is being got every frame
+			Mob player = players.get(0);	//This is being got every frame
 			
 	//		if (calculateDistance(x,y,player.getX(),player.getY()) > (double)(16*2)) {	//this works but it's a lil shite.
 			if ((int) x < (int) player.getX()) xa+=speed;	//Mathematical sidenote: xa = (x - player.getX()) / x

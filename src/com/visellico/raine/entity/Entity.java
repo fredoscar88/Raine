@@ -4,6 +4,7 @@ import java.util.Random;
 
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.graphics.Sprite;
+import com.visellico.raine.graphics.ui.UIPanel;
 import com.visellico.raine.level.Level;
 								//cant be instantiated which is A-OKAY
 public abstract class Entity {	//abstract because this is a template, a framework- there will never be just an "entity" created, it will always be a type of entity
@@ -11,6 +12,7 @@ public abstract class Entity {	//abstract because this is a template, a framewor
 	protected Sprite sprite;					
 	public double x, y;	//location- probably not based on pixels but just the x,y for all tiles/pixels in the map
 						//x,y redundant if we dont have a sprite
+	protected UIPanel topPanel;
 	
 	//NB: (IMPORTANT) Instance variables, stuff defined OUTSIDE of methods, start with default values filled with 0s. Implicitly initialized with the default value of its type. 
 	//Booleans are false, primitive data types are 0, etc. //This applies to static as well. Local variables inside of methods do not come with default values.

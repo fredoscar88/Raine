@@ -1,11 +1,9 @@
 package com.visellico.raine.entity.mob;
 
-import java.awt.Button;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
 
@@ -81,7 +79,6 @@ public class Player extends Mob implements EventListener {
 		this.x = xspawn;
 		this.y = yspawn;
 		this.input = input;
-		ui = Game.getUIMananger();
 		sprite = Sprite.player_back;
 		curSprite = down;
 		fireRate = WizardProjectile.FIRERATE;
@@ -89,6 +86,7 @@ public class Player extends Mob implements EventListener {
 		health = maxHealth;
 		setAnimatedFrameRate(FRAME_RATE, down, up, left, right);
 		
+		ui = Game.getUIMananger();
 		
 		
 		try {

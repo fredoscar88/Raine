@@ -52,15 +52,6 @@ public class Mouse implements MouseListener, MouseMotionListener {
 		eventListener.onEvent(event);
 	}
 
-	public void mouseClicked(MouseEvent e) {
-	}
-
-	public void mouseEntered(MouseEvent e) {
-	}
-
-	public void mouseExited(MouseEvent e) {
-	}
-
 	public void mousePressed(MouseEvent e) {
 		mouseB = e.getButton();
 		
@@ -73,6 +64,15 @@ public class Mouse implements MouseListener, MouseMotionListener {
 		
 		MouseReleasedEvent event = new MouseReleasedEvent(e.getButton(), e.getX(), e.getY());
 		eventListener.onEvent(event);
+	}
+	
+	public void mouseClicked(MouseEvent e) {
+	}
+	
+	public void mouseEntered(MouseEvent e) {
+	}
+	
+	public void mouseExited(MouseEvent e) {
 	}
 
 }

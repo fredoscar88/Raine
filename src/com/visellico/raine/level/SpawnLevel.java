@@ -6,6 +6,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import com.visellico.raine.entity.mob.Dummy;
+import com.visellico.raine.entity.mob.Player;
 import com.visellico.raine.entity.mob.Shooter;
 
 public class SpawnLevel extends Level {
@@ -19,6 +20,10 @@ public class SpawnLevel extends Level {
 		super(path);
 //		loadLevel(path);	//load level is already called in the super constructor- calling it again ends up with a nullpointerexception on Tiles since we overwrite Level's work on 
 							//loading and generating
+		
+		TileCoordinate playerSpawn = new TileCoordinate(22, 59);
+//		add(new Player("Fredo 2", playerSpawn.x(), playerSpawn.y(), null));	//adjusting player spawn. Tile sizes here are 16, multiplied by a coordinate in tile level precision, added by half a tile in pixel precision
+		
 		
 	}
 

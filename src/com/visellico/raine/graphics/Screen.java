@@ -142,6 +142,25 @@ public class Screen {
 		
 	}
 	
+	public void fillRect(int xp, int yp, int width, int height, int color, boolean fixed) {
+		if (fixed) {
+			xp -= xOffset;
+			yp -= yOffset;
+		}
+		
+		for (int y = 0; y < height; y++) {
+			int yo = yp + y;
+			if (yo < 0 || yo >= this.height)
+				continue;
+			for (int x = 0; x < width; x++) {
+				int xo = xp + x;
+				if (xo < 0 || xo >= this.width)
+					continue;
+				pixels[xo + yo * this.width] = color;
+			}
+		}
+	}
+	
 	//offset based system of render, factor players position then offset. The alternative is managing tiles pos seperately, not practical (ep 28 ~2:20)
 	//separate method for each type of rendering we have
 	/**

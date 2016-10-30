@@ -23,6 +23,7 @@ import com.visellico.raine.input.Keyboard;
 import com.visellico.raine.input.Mouse;
 import com.visellico.raine.level.Level;
 import com.visellico.raine.level.TileCoordinate;
+import com.visellico.raine.net.player.NetPlayer;
 
 public class Game extends Canvas implements Runnable, EventListener {
 
@@ -45,6 +46,7 @@ public class Game extends Canvas implements Runnable, EventListener {
 	private JFrame frame;	//ugh
 	public final static String title = "Raine";
 	private boolean running = false;
+	private boolean debug = true;
 	
 	private static UIManager uiManager;	
 	private Screen screen;
@@ -67,16 +69,18 @@ public class Game extends Canvas implements Runnable, EventListener {
 		screen = new Screen(width, height);	//not scaled either, I guess
 		frame = new JFrame();
 		key = new Keyboard();
+		uiManager = new UIManager();  	//creating this BEFORE the player since player references this in it's constructor. Im fairly certain we can create it after if we wanted to, tho
 		level = Level.spawn;	//new SpawnLevel("/levels/spawn.png");	//starts @spawn
 //		level = new RandomLevel(64,64);
 		addLayer(level);	//hooray
-		uiManager = new UIManager();	//creating this BEFORE the player since player references this in it's constructor. Im fairly certain we can create it after if we wanted to, tho
 		//player = new Player(key);
 		TileCoordinate playerSpawn = new TileCoordinate(20, 59);
 		player = new Player("Fredo", playerSpawn.x(), playerSpawn.y(), key);	//adjusting player spawn. Tile sizes here are 16, multiplied by a coordinate in tile level precision, added by half a tile in pixel precision
 															//we can edit this into the constructor in the player class as well, thanks youtube comments
 															//however we just ended up using a tileCoordinate class that does 16x for us.
-		level.add(player);		
+
+		level.addPlayer(player);
+		level.addPlayer(new NetPlayer());
 		
 		//Must do this after key is initialized
 		addKeyListener(key);	//adds this component to the canvas
@@ -89,6 +93,7 @@ public class Game extends Canvas implements Runnable, EventListener {
 	}
 	
 	public static UIManager getUIMananger() {
+		System.out.println(uiManager);
 		return uiManager;
 	}
 	
@@ -191,7 +196,7 @@ public class Game extends Canvas implements Runnable, EventListener {
 			return;
 		}
 		
-		screen.clear();
+		//screen.clear();
 		double xScroll = player.getX() - (screen.width / 2);	//Offsets level rendering to center the player
 		double yScroll = player.getY() - (screen.height / 2);	//this is because the player's position would other wise be at the top left of the screen.
 		level.setScroll((int) xScroll, (int) yScroll);

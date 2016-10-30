@@ -96,7 +96,7 @@ public class Particle extends Entity {
 			this.za *= -0.5;
 		}
 		
-		this.xx += xa;	//coordinates update very tick by ?a much
+		this.xx += xa;	//coordinates update every tick by ?a much
 		this.yy += ya;	//they need to change direction on collision- duh
 		this.zz += za;
 		

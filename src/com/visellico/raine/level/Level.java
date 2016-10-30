@@ -14,6 +14,7 @@ import com.visellico.raine.events.Event;
 import com.visellico.raine.graphics.Screen;
 import com.visellico.raine.graphics.layers.Layer;
 import com.visellico.raine.level.tile.Tile;
+import com.visellico.raine.net.player.NetPlayer;
 import com.visellico.raine.util.Vector2i;
 
 //there will be two "types" here random gen and data loaded levels
@@ -37,7 +38,7 @@ public class Level extends Layer {	//So, MASSIVE ENGINE OVERHAUL well, chanes, b
 	private List<Entity> entities = new ArrayList<Entity>();	//Side note: No need to instantiate an arraylist like ArrayList<Entity> since it's implied when we do List<entity>
 	private List<Projectile> projectiles = new ArrayList<Projectile>();
 	private List<Particle> particles = new ArrayList<Particle>();
-	private List<Player> players = new ArrayList<Player>();
+	private List<Mob> players = new ArrayList<Mob>();	//changed to accomodate NetPlayer. Player should extend NetPlayer tbh.
 	
 	//welp I've never used one of these before.
 	//Takes in two objects...  and in this case, compares their fCost to find the lower one, and switches their positions based on datshit I guess.
@@ -292,11 +293,12 @@ public class Level extends Layer {	//So, MASSIVE ENGINE OVERHAUL well, chanes, b
 		}
 		e.init(this);
 	}
-
-	public List<Player> getPlayers() {
-		
-		return players;
+	
+	public void addPlayer(Mob player) {
+		player.init(this);
+		players.add(player);
 	}
+
 	
 	public List<Entity> getEntities(Entity e, int radius) {	//get all entities in the specified radius
 		List<Entity> result = new ArrayList<Entity>();
@@ -340,13 +342,13 @@ public class Level extends Layer {	//So, MASSIVE ENGINE OVERHAUL well, chanes, b
 		return result;
 	}
 	
-	public List<Player> getPlayers(Entity e, int radius) {	//No items in entities is going to be a player! There is a seperate player list!
-		List<Player> result = new ArrayList<>();
+	public List<Mob> getPlayers(Entity e, int radius) {	//No items in entities is going to be a player! There is a seperate player list!
+		List<Mob> result = new ArrayList<>();
 		double ex = e.getX();
 		double ey = e.getY();
 		for (int i = 0; i < players.size(); i++) {
 			Entity entity = players.get(i);	//lol this can be Player player = players.get(i)
-			if (players.get(i) instanceof Player) {	
+			if (players.get(i) instanceof Player || players.get(i) instanceof NetPlayer) {	
 				double x = entity.getX();
 				double y = entity.getY();
 				
@@ -362,12 +364,17 @@ public class Level extends Layer {	//So, MASSIVE ENGINE OVERHAUL well, chanes, b
 		return result;
 	}
 	
-	public Player getPlayerAt(int index) {
+	public List<Mob> getPlayers() {
+		
+		return players;
+	}
+	
+	public Mob getPlayerAt(int index) {
 		return players.get(index);	//may need to handle exceptions
 	}
 	
 	public Player getClientPlayer() {
-		return players.get(0);	//Client player is first.... dunno how this meshes with networking
+		return (Player) players.get(0);	//Client player is first.... dunno how this meshes with networking
 	}
 	
 	//We are now pulling color constants from Tile
