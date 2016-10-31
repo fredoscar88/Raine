@@ -23,6 +23,7 @@ import com.visellico.raine.input.Keyboard;
 import com.visellico.raine.input.Mouse;
 import com.visellico.raine.level.Level;
 import com.visellico.raine.level.TileCoordinate;
+import com.visellico.raine.net.Client;
 import com.visellico.raine.net.player.NetPlayer;
 import com.visellico.rainecloud.serialization.RCDatabase;
 import com.visellico.rainecloud.serialization.RCField;
@@ -69,9 +70,16 @@ public class Game extends Canvas implements Runnable, EventListener {
 		setSize();
 		//widthGame (sense graphics g doesnt use the screen renderer
 		screen = new Screen(width, height);	//not scaled either, I guess
+		uiManager = new UIManager();  	//creating this BEFORE the player since player references this in it's constructor. Im fairly certain we can create it after if we wanted to, tho
 		frame = new JFrame();
 		key = new Keyboard();
-		uiManager = new UIManager();  	//creating this BEFORE the player since player references this in it's constructor. Im fairly certain we can create it after if we wanted to, tho
+		
+		Client client = new Client("localhost", 8192);
+		client.connect();
+		
+		RCDatabase db = RCDatabase.deserializeFromFile("res/data/screen.bin");
+		client.send(db);		
+		
 		level = Level.spawn;	//new SpawnLevel("/levels/spawn.png");	//starts @spawn
 //		level = new RandomLevel(64,64);
 		addLayer(level);	//hooray
